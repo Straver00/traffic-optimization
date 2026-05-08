@@ -1,0 +1,12 @@
+<nodes>
+    <!-- Intersection Node -->
+    <node id="J0" x="0" y="0" type="traffic_light"/>
+
+    <!-- Avenida 80 -->
+    <node id="N" x="0" y="500" type="priority"/>
+    <node id="S" x="0" y="-500" type="priority"/>
+
+    <!-- Calle 65 -->
+    <node id="E" x="500" y="0" type="priority"/>
+    <node id="W" x="-500" y="0" type="priority"/>
+</nodes>

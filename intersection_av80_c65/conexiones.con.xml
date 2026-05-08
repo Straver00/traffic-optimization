@@ -1,0 +1,23 @@
+<connections>
+    <!-- Avenida 80 Norte a Sur -->
+    <connection from="N_in" to="S_out" fromLane="0" toLane="0" tl="J0" linkIndex="0"/>
+    <connection from="N_in" to="S_out" fromLane="1" toLane="1" tl="J0" linkIndex="1"/>
+    <connection from="N_in" to="S_out" fromLane="2" toLane="2" tl="J0" linkIndex="2"/>
+
+    <!-- Avenida 80 sur a Norte -->
+    <connection from="S_in" to="N_out" fromLane="0" toLane="0" tl="J0" linkIndex="3"/>
+    <connection from="S_in" to="N_out" fromLane="1" toLane="1" tl="J0" linkIndex="4"/>
+    <connection from="S_in" to="N_out" fromLane="2" toLane="2" tl="J0" linkIndex="5"/>
+
+    <!-- Avenida 65 oriente a occidente -->
+    <connection from="E_in" to="W_out" fromLane="0" toLane="0" tl="J0" linkIndex="6"/>
+    <connection from="E_in" to="W_out" fromLane="1" toLane="1" tl="J0" linkIndex="7"/>
+
+    <!-- Avenida 65 occidente a oriente -->
+    <connection from="W_in" to="E_out" fromLane="0" toLane="0" tl="J0" linkIndex="8"/>
+    <connection from="W_in" to="E_out" fromLane="1" toLane="1" tl="J0" linkIndex="9"/>
+
+    <!-- Giro a la derecha desde calle 65 -->
+    <connection from="E_in" to="N_out" fromLane="0" toLane="0" tl="J0" linkIndex="10"/>
+    <connection from="W_in" to="S_out" fromLane="0" toLane="0" tl="J0" linkIndex="11"/>
+</connections>
