@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SIAVA — Monitor de Simulacion</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  :root {
+    --bg:#0a0c10;--surface:#111318;--border:#1e2230;
+    --av80:#00e5ff;--c65:#ff6b35;--green:#00ff88;--yellow:#ffd600;
+    --muted:#4a5568;--text:#e2e8f0;--text-dim:#718096;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;padding:24px}
+  header{display:flex;align-items:baseline;gap:16px;margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:16px}
+  header h1{font-size:1.5rem;font-weight:800;letter-spacing:-0.02em;color:var(--av80)}
+  header span{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-dim)}
+  #status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:6px;transition:background 0.3s}
+  #status-dot.running{background:var(--green);animation:pulse 1.2s infinite}
+  #status-dot.done{background:var(--yellow);animation:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden}
+  .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+  .kpi.wait::before{background:var(--yellow)}.kpi.av80::before{background:var(--av80)}
+  .kpi.speed::before{background:var(--green)}.kpi.c65::before{background:var(--c65)}.kpi.co2::before{background:#a78bfa}
+  .kpi-label{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+  .kpi-value{font-size:1.8rem;font-weight:800;line-height:1;letter-spacing:-0.03em}
+  .kpi-unit{font-size:0.7rem;color:var(--text-dim);margin-top:4px;font-family:'JetBrains Mono',monospace}
+  .kpi-delta{font-size:0.72rem;font-family:'JetBrains Mono',monospace;margin-top:6px;font-weight:700}
+  .kpi-delta.better{color:var(--green)}.kpi-delta.worse{color:var(--c65)}
+  .phase-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:20px}
+  .phase-label{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap}
+  .phase-indicator{display:flex;gap:10px;flex:1}
+  .phase-btn{flex:1;padding:10px;border-radius:6px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:700;letter-spacing:0.05em;transition:all 0.3s;border:1px solid var(--border);color:var(--text-dim);background:transparent}
+  .phase-btn.active-av80{background:rgba(0,229,255,0.12);border-color:var(--av80);color:var(--av80);box-shadow:0 0 16px rgba(0,229,255,0.2)}
+  .phase-btn.active-allred{background:rgba(255,255,255,0.05);border-color:#444;color:#888}
+  .phase-btn.active-c65{background:rgba(255,107,53,0.12);border-color:var(--c65);color:var(--c65);box-shadow:0 0 16px rgba(255,107,53,0.2)}
+  #step-counter{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--text-dim);white-space:nowrap}
+  .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+  @media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px}
+  .chart-title{font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;font-family:'JetBrains Mono',monospace}
+  .chart-card canvas{max-height:180px}
+  .compare-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px}
+  .compare-title{font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;font-family:'JetBrains Mono',monospace}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-dim);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);letter-spacing:0.05em}
+  td{font-family:'JetBrains Mono',monospace;font-size:0.78rem;padding:8px;border-bottom:1px solid rgba(255,255,255,0.04)}
+  td.metric-name{color:var(--text-dim)}td.val-fixed{color:var(--text)}td.val-adapt{color:var(--av80)}
+  td.delta-pos{color:var(--green);font-weight:700}td.delta-neg{color:var(--c65);font-weight:700}td.delta-neu{color:var(--text-dim)}
+  footer{margin-top:24px;padding-top:12px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-dim);display:flex;justify-content:space-between}
+  .mode-badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:0.65rem;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:0.08em;margin-left:8px}
+  .mode-badge.adaptive{background:rgba(0,229,255,0.15);color:var(--av80);border:1px solid var(--av80)}
+  .mode-badge.fixed{background:rgba(255,107,53,0.15);color:var(--c65);border:1px solid var(--c65)}
+</style>
+</head>
+<body>
+<header>
+  <h1>SIAVA</h1>
+  <span>Interseccion Av. 80 x Calle 65 · Medellin</span>
+  <span id="mode-badge-wrap" style="margin-left:auto;display:flex;align-items:center;gap:8px">
+    <span id="status-dot"></span>
+    <span id="status-text">Esperando datos...</span>
+  </span>
+</header>
+
+<div class="kpi-row">
+  <div class="kpi wait">
+    <div class="kpi-label">Espera Prom.</div>
+    <div class="kpi-value" id="kpi-wait">--</div>
+    <div class="kpi-unit">segundos / vehiculo</div>
+    <div class="kpi-delta" id="kpi-wait-delta"></div>
+  </div>
+  <div class="kpi av80">
+    <div class="kpi-label">Cola Max.</div>
+    <div class="kpi-value" id="kpi-queue">--</div>
+    <div class="kpi-unit">vehiculos detenidos</div>
+    <div class="kpi-delta" id="kpi-queue-delta"></div>
+  </div>
+  <div class="kpi speed">
+    <div class="kpi-label">Vel. Promedio</div>
+    <div class="kpi-value" id="kpi-speed">--</div>
+    <div class="kpi-unit">m/s en red</div>
+    <div class="kpi-delta" id="kpi-speed-delta"></div>
+  </div>
+  <div class="kpi c65">
+    <div class="kpi-label">Throughput</div>
+    <div class="kpi-value" id="kpi-thru">--</div>
+    <div class="kpi-unit">vehiculos completados</div>
+    <div class="kpi-delta" id="kpi-thru-delta"></div>
+  </div>
+  <div class="kpi co2">
+    <div class="kpi-label">Paso Actual</div>
+    <div class="kpi-value" id="kpi-step">--</div>
+    <div class="kpi-unit">segundos simulados</div>
+  </div>
+</div>
+
+<div class="phase-bar">
+  <div class="phase-label">Fase activa</div>
+  <div class="phase-indicator">
+    <div class="phase-btn" id="ph0">AV. 80 VERDE</div>
+    <div class="phase-btn" id="ph1">TODO ROJO</div>
+    <div class="phase-btn" id="ph2">CALLE 65 VERDE</div>
+  </div>
+  <div id="step-counter">paso --</div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="chart-title">Tiempo de Espera Promedio (s)</div>
+    <canvas id="chart-wait"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Cola Maxima (veh detenidos)</div>
+    <canvas id="chart-queue"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Velocidad Promedio (m/s)</div>
+    <canvas id="chart-speed"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Throughput Acumulado (veh)</div>
+    <canvas id="chart-thru"></canvas>
+  </div>
+</div>
+
+<div class="compare-card" id="compare-section" style="display:none">
+  <div class="compare-title">Comparacion Final: Tiempos Fijos vs. Adaptativo</div>
+  <table>
+    <thead>
+      <tr><th>Metrica</th><th>Tiempos Fijos</th><th>Adaptativo</th><th>Variacion</th><th>Meta PMV</th></tr>
+    </thead>
+    <tbody id="compare-body"></tbody>
+  </table>
+</div>
+
+<footer>
+  <span>UNAL · Facultad de Minas · Proyecto Integrado de Ingenieria 2026</span>
+  <span id="last-update">--</span>
+</footer>
+
+<script>
+const COLORS={adaptive:'#00e5ff',fixed:'#ff6b35',grid:'rgba(255,255,255,0.05)',text:'#718096'};
+const chartOpts={responsive:true,maintainAspectRatio:true,animation:{duration:0},
+  plugins:{legend:{labels:{color:COLORS.text,font:{family:'JetBrains Mono',size:10}}}},
+  scales:{x:{ticks:{color:COLORS.text,font:{family:'JetBrains Mono',size:10},maxTicksLimit:6},grid:{color:COLORS.grid}},
+          y:{ticks:{color:COLORS.text,font:{family:'JetBrains Mono',size:10}},grid:{color:COLORS.grid}}}};
+
+function makeChart(id,color){
+  return new Chart(document.getElementById(id).getContext('2d'),{
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Adaptativo',data:[],borderColor:color,borderWidth:2,pointRadius:0,tension:0.3,fill:false},
+      {label:'Fijo',data:[],borderColor:COLORS.fixed,borderWidth:1.5,pointRadius:0,tension:0.3,fill:false,borderDash:[4,3]}
+    ]},
+    options:chartOpts
+  });
+}
+const charts={
+  wait: makeChart('chart-wait','#00e5ff'),
+  queue:makeChart('chart-queue','#00e5ff'),
+  speed:makeChart('chart-speed','#00ff88'),
+  thru: makeChart('chart-thru','#a78bfa')
+};
+
+let fixedData=null,adaptiveData=null;
+const MAX_PTS=150;
+
+async function fetchJSON(path){
+  try{const r=await fetch(path+'?t='+Date.now());return r.ok?await r.json():null}catch{return null}
+}
+
+function setStatus(state,text){
+  const d=document.getElementById('status-dot');
+  d.className=state==='running'?'running':state==='done'?'done':'';
+  document.getElementById('status-text').textContent=text;
+}
+
+function appendPoint(chart,label,value,dsIdx){
+  if(value==null)return;
+  if(chart.data.labels.length>=MAX_PTS&&dsIdx===0){
+    chart.data.labels.shift();
+    chart.data.datasets.forEach(d=>d.data.shift());
+  }
+  if(dsIdx===0)chart.data.labels.push(label);
+  while(chart.data.datasets[dsIdx].data.length<chart.data.labels.length-1)
+    chart.data.datasets[dsIdx].data.push(null);
+  chart.data.datasets[dsIdx].data.push(value);
+  chart.update('none');
+}
+
+function setDelta(id,current,baseline,higherIsBetter){
+  if(current==null||!baseline)return;
+  const pct=(current-baseline)/baseline*100;
+  const el=document.getElementById(id);
+  const better=higherIsBetter?pct>0:pct<0;
+  el.textContent=(pct>0?'+':'')+pct.toFixed(1)+'% vs fijo';
+  el.className='kpi-delta '+(better?'better':'worse');
+}
+
+function updateLive(live){
+  const isAdaptive=live.mode==='adaptive';
+  setStatus('running',isAdaptive?'Control Adaptativo corriendo...':'Tiempos Fijos corriendo...');
+  document.getElementById('kpi-wait').textContent=live.waiting_time_avg!=null?live.waiting_time_avg.toFixed(1):'--';
+  document.getElementById('kpi-queue').textContent=live.queue_length_max??'--';
+  document.getElementById('kpi-speed').textContent=live.speed_avg!=null?live.speed_avg.toFixed(2):'--';
+  document.getElementById('kpi-thru').textContent=live.throughput_total??'--';
+  document.getElementById('kpi-step').textContent=live.step??'--';
+  document.getElementById('step-counter').textContent='paso '+(live.step??'--');
+  const phClasses=['active-av80','active-allred','active-c65'];
+  [0,1,2].forEach(i=>{
+    const el=document.getElementById('ph'+i);
+    el.className='phase-btn';
+    if(live.phase===i)el.classList.add(phClasses[i]);
+  });
+  const dsIdx=isAdaptive?0:1;
+  appendPoint(charts.wait, live.step,live.waiting_time_avg,dsIdx);
+  appendPoint(charts.queue,live.step,live.queue_length_max,dsIdx);
+  appendPoint(charts.speed,live.step,live.speed_avg,dsIdx);
+  appendPoint(charts.thru, live.step,live.throughput_total,dsIdx);
+  if(fixedData&&isAdaptive){
+    setDelta('kpi-wait-delta', live.waiting_time_avg,fixedData.waiting_time_avg_s,false);
+    setDelta('kpi-queue-delta',live.queue_length_max, fixedData.queue_length_max_veh,false);
+    setDelta('kpi-speed-delta',live.speed_avg,        fixedData.speed_avg_ms,true);
+  }
+}
+
+function renderComparison(fixed,adaptive){
+  document.getElementById('compare-section').style.display='block';
+  setStatus('done','Simulacion completada');
+  const rows=[
+    {label:'Espera prom. (s)',     fk:'waiting_time_avg_s',   lower:true, meta:'-15%'},
+    {label:'Cola prom. (veh)',     fk:'queue_length_avg_veh', lower:true, meta:'--'},
+    {label:'Cola max. (veh)',      fk:'queue_length_max_veh', lower:true, meta:'--'},
+    {label:'Velocidad prom. (m/s)',fk:'speed_avg_ms',         lower:false,meta:'--'},
+    {label:'Throughput (veh)',     fk:'throughput_total_veh', lower:false,meta:'--'},
+    {label:'CO2 total (mg)',       fk:'co2_total_mg',         lower:true, meta:'-10%'},
+  ];
+  const tbody=document.getElementById('compare-body');
+  tbody.innerHTML='';
+  rows.forEach(r=>{
+    const fval=fixed[r.fk]??'--';
+    const aval=adaptive[r.fk]??'--';
+    let dclass='delta-neu',dtext='--';
+    if(fval!=='--'&&aval!=='--'&&fval!==0){
+      const pct=(aval-fval)/fval*100;
+      const better=r.lower?pct<0:pct>0;
+      dtext=(pct>0?'+':'')+pct.toFixed(1)+'%';
+      dclass=better?'delta-pos':'delta-neg';
+    }
+    tbody.insertAdjacentHTML('beforeend',`<tr>
+      <td class="metric-name">${r.label}</td>
+      <td class="val-fixed">${typeof fval==='number'?fval.toFixed(2):fval}</td>
+      <td class="val-adapt">${typeof aval==='number'?aval.toFixed(2):aval}</td>
+      <td class="${dclass}">${dtext}</td>
+      <td class="delta-neu">${r.meta}</td>
+    </tr>`);
+  });
+}
+
+async function poll(){
+  const live=await fetchJSON('/evaluation/results/live_feed.json');
+  if(live)updateLive(live);
+  const fs=await fetchJSON('/evaluation/results/escenario1_fixed_summary.json');
+  const as=await fetchJSON('/evaluation/results/escenario1_adaptive_summary.json');
+  if(fs)fixedData=fs;
+  if(as)adaptiveData=as;
+  if(fixedData&&adaptiveData)renderComparison(fixedData,adaptiveData);
+  document.getElementById('last-update').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CO');
+}
+
+poll();
+setInterval(poll,1500);
+</script>
+</body>
+</html>

@@ -13,15 +13,15 @@
     <route id="route_E_N" edges="E_in N_out"/>
     <route id="route_W_S" edges="W_in S_out"/>
 
-    <!-- Flujos Avenida 89  -->
-    <flow id="flow_NS" route="route_N_S" begin="0" end="3600" vehsPerHour="600"/>
-    <flow id="flow_SN" route="route_S_N" begin="0" end="3600" vehsPerHour="600"/>
+    <!-- Flujos Avenida 80 - hora pico matutina -->
+    <flow id="flow_NS" route="route_N_S" begin="0" end="3600" vehsPerHour="900"/>
+    <flow id="flow_SN" route="route_S_N" begin="0" end="3600" vehsPerHour="900"/>
 
-    <!-- Flujos Calle 65 recto -->
-    <flow id="flow_EW" route="route_E_W" begin="0" end="3600" vehsPerHour="400"/>
-    <flow id="flow_WE" route="route_W_E" begin="0" end="3600" vehsPerHour="400"/>
+    <!-- Flujos Calle 65 recto - hora pico matutina -->
+    <flow id="flow_EW" route="route_E_W" begin="0" end="3600" vehsPerHour="600"/>
+    <flow id="flow_WE" route="route_W_E" begin="0" end="3600" vehsPerHour="600"/>
 
-    <!-- Flujos de giro a la derecha desde calle 65 -->
-    <flow id="flow_EN" route="route_E_N" begin="0" end="3600" vehsPerHour="100"/>
-    <flow id="flow_WS" route="route_W_S" begin="0" end="3600" vehsPerHour="100"/>
+    <!-- Flujos de giro a la derecha desde calle 65 - hora pico matutina -->
+    <flow id="flow_EN" route="route_E_N" begin="0" end="3600" vehsPerHour="150"/>
+    <flow id="flow_WS" route="route_W_S" begin="0" end="3600" vehsPerHour="150"/>
 </routes>
