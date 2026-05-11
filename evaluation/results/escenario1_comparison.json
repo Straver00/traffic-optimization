@@ -1,76 +1,79 @@
 {
   "fixed": {
     "controller_mode": "fixed",
-    "steps_recorded": 3600,
-    "waiting_time_avg_s": 3.36,
-    "waiting_time_max_s": 12.95,
-    "queue_length_avg_veh": 17.1,
-    "queue_length_max_veh": 43,
-    "speed_avg_ms": 8.75,
-    "throughput_total_veh": 3195,
-    "co2_total_mg": 762032643.16
+    "steps_recorded": 3300,
+    "warmup_excluded_steps": 300,
+    "waiting_time_avg_s": 3.38,
+    "waiting_time_median_s": 2.65,
+    "waiting_time_max_s": 12.54,
+    "queue_length_avg_veh": 17.42,
+    "queue_length_median_veh": 17.0,
+    "queue_length_max_veh": 41,
+    "speed_avg_ms": 8.636,
+    "throughput_total_veh": 3022,
+    "co2_total_mg": 705370693.51
   },
   "adaptive": {
     "controller_mode": "adaptive",
     "steps_recorded": 3300,
     "warmup_excluded_steps": 300,
-    "waiting_time_avg_s": 5.66,
-    "waiting_time_median_s": 4.8,
-    "waiting_time_max_s": 15.77,
-    "queue_length_avg_veh": 25.14,
-    "queue_length_median_veh": 24.0,
-    "queue_length_max_veh": 51,
-    "speed_avg_ms": 8.136,
-    "throughput_total_veh": 3018,
-    "co2_total_mg": 755606449.35
+    "waiting_time_avg_s": 6.95,
+    "waiting_time_median_s": 5.56,
+    "waiting_time_max_s": 22.92,
+    "queue_length_avg_veh": 28.19,
+    "queue_length_median_veh": 28.0,
+    "queue_length_max_veh": 57,
+    "speed_avg_ms": 7.824,
+    "throughput_total_veh": 3021,
+    "co2_total_mg": 770869012.12
   },
   "comparison": {
     "waiting_time_avg_s": {
       "unit": "s",
-      "fixed": 3.36,
-      "adaptive": 5.66,
-      "change_pct": 68.45,
+      "fixed": 3.38,
+      "adaptive": 6.95,
+      "change_pct": 105.62,
       "improved": false,
       "direction": "menor es mejor"
     },
     "queue_length_avg_veh": {
       "unit": "veh",
-      "fixed": 17.1,
-      "adaptive": 25.14,
-      "change_pct": 47.02,
+      "fixed": 17.42,
+      "adaptive": 28.19,
+      "change_pct": 61.83,
       "improved": false,
       "direction": "menor es mejor"
     },
     "queue_length_max_veh": {
       "unit": "veh",
-      "fixed": 43,
-      "adaptive": 51,
-      "change_pct": 18.6,
+      "fixed": 41,
+      "adaptive": 57,
+      "change_pct": 39.02,
       "improved": false,
       "direction": "menor es mejor"
     },
     "speed_avg_ms": {
       "unit": "m/s",
-      "fixed": 8.75,
-      "adaptive": 8.136,
-      "change_pct": -7.02,
+      "fixed": 8.636,
+      "adaptive": 7.824,
+      "change_pct": -9.4,
       "improved": false,
       "direction": "mayor es mejor"
     },
     "throughput_total_veh": {
       "unit": "veh",
-      "fixed": 3195,
-      "adaptive": 3018,
-      "change_pct": -5.54,
+      "fixed": 3022,
+      "adaptive": 3021,
+      "change_pct": -0.03,
       "improved": false,
       "direction": "mayor es mejor"
     },
     "co2_total_mg": {
       "unit": "mg",
-      "fixed": 762032643.16,
-      "adaptive": 755606449.35,
-      "change_pct": -0.84,
-      "improved": true,
+      "fixed": 705370693.51,
+      "adaptive": 770869012.12,
+      "change_pct": 9.29,
+      "improved": false,
       "direction": "menor es mejor"
     }
   }

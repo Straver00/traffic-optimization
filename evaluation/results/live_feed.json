@@ -1,1 +1,1 @@
-{"step": 3600, "mode": "adaptive", "phase": 0, "waiting_time_avg": 0.796, "queue_length_max": 9, "speed_avg": 8.68, "throughput_total": 3187}
+{"step": 3600, "mode": "adaptive", "phase": 0, "waiting_time_avg": 4.008, "queue_length_max": 21, "speed_avg": 9.613, "throughput_total": 3178}

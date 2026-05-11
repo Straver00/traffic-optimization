@@ -1,5 +1,9 @@
 <routes>
-    <vType id="car" accel="2.6" decel="4.5" sigma="0.5" length="5.0" maxSpeed="13.89"/>
+    <vType id="car"     accel="2.6" decel="4.5" sigma="0.5" length="5.0"  maxSpeed="13.89"/>
+    <vType id="moto"    accel="3.5" decel="5.0" sigma="0.5" length="2.0"  maxSpeed="16.67"/>
+    <vType id="bus"     accel="1.2" decel="4.0" sigma="0.5" length="12.0" maxSpeed="11.11"/>
+    <vType id="truck"   accel="1.0" decel="4.0" sigma="0.5" length="8.0"  maxSpeed="11.11"/>
+    <vType id="bicycle" accel="1.2" decel="3.0" sigma="0.5" length="1.8"  maxSpeed="6.94"/>
 
     <!-- Rutas Avenida 80 -->
     <route id="route_N_S" edges="N_in S_out"/>
@@ -14,14 +18,14 @@
     <route id="route_W_S" edges="W_in S_out"/>
 
     <!-- Flujos Avenida 80 - hora pico matutina -->
-    <flow id="flow_NS" route="route_N_S" begin="0" end="3600" vehsPerHour="900"/>
-    <flow id="flow_SN" route="route_S_N" begin="0" end="3600" vehsPerHour="900"/>
+    <flow id="flow_NS" type="car" route="route_N_S" begin="0" end="3600" vehsPerHour="900"/>
+    <flow id="flow_SN" type="car" route="route_S_N" begin="0" end="3600" vehsPerHour="900"/>
 
     <!-- Flujos Calle 65 recto - hora pico matutina -->
-    <flow id="flow_EW" route="route_E_W" begin="0" end="3600" vehsPerHour="600"/>
-    <flow id="flow_WE" route="route_W_E" begin="0" end="3600" vehsPerHour="600"/>
+    <flow id="flow_EW" type="car" route="route_E_W" begin="0" end="3600" vehsPerHour="600"/>
+    <flow id="flow_WE" type="car" route="route_W_E" begin="0" end="3600" vehsPerHour="600"/>
 
     <!-- Flujos de giro a la derecha desde calle 65 - hora pico matutina -->
-    <flow id="flow_EN" route="route_E_N" begin="0" end="3600" vehsPerHour="150"/>
-    <flow id="flow_WS" route="route_W_S" begin="0" end="3600" vehsPerHour="150"/>
+    <flow id="flow_EN" type="car" route="route_E_N" begin="0" end="3600" vehsPerHour="150"/>
+    <flow id="flow_WS" type="car" route="route_W_S" begin="0" end="3600" vehsPerHour="150"/>
 </routes>
