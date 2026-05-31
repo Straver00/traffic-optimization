@@ -31,7 +31,7 @@ class TrafficSnapshot:
     throughput: int               # veh completados en este paso
     occupancy_avg: float          # %
     speed_avg: float              # m/s
-    green_phase_index: int        # fase activa del semáforo (0 = Av80, 1 = C65)
+    green_phase_index: int        # fase activa (0-5 segun semaforo.tll.xml)
     co2_mg: float                 # mg emitidos en este paso
     controller_mode: str          # "fixed" | "adaptive"
 

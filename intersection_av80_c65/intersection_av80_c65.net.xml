@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-05-07T23:14:49.133454-05:00 by Eclipse SUMO netconvert 1.26.0
+<!-- generated on 2026-05-31T10:29:24.313640-05:00 by Eclipse SUMO netconvert 1.26.0
 <netconvertConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
-        <node-files value="intersection_av80_c65\nodos.nod.xml"/>
-        <edge-files value="intersection_av80_c65\aristas.edg.xml"/>
-        <connection-files value="intersection_av80_c65\conexiones.con.xml"/>
-        <tllogic-files value="intersection_av80_c65\semaforo.tll.xml"/>
+        <node-files value="C:\Users\Straver\Documents\Programming\semaforos\intersection_av80_c65\nodos.nod.xml"/>
+        <edge-files value="C:\Users\Straver\Documents\Programming\semaforos\intersection_av80_c65\aristas.edg.xml"/>
+        <connection-files value="C:\Users\Straver\Documents\Programming\semaforos\intersection_av80_c65\conexiones.con.xml"/>
+        <tllogic-files value="C:\Users\Straver\Documents\Programming\semaforos\intersection_av80_c65\semaforo.tll.xml"/>
     </input>
 
     <output>
-        <output-file value="intersection_av80_c65\intersection_av80_c65.net.xml"/>
+        <output-file value="C:\Users\Straver\Documents\Programming\semaforos\intersection_av80_c65\intersection_av80_c65.net.xml"/>
     </output>
 
 </netconvertConfiguration>
@@ -97,8 +97,11 @@
 
     <tlLogic id="J0" type="static" programID="programa_av80_c65" offset="0">
         <phase duration="52" state="GGGrrrGGGrrr" name="Av80_verde"/>
-        <phase duration="15" state="rrrrrrrrrrrr" name="Peatonal"/>
+        <phase duration="3"  state="yyyrrryyyrrr" name="Av80_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_av80"/>
         <phase duration="33" state="rrrGGGrrrGGG" name="C65_verde"/>
+        <phase duration="3"  state="rrryyyrrryyy" name="C65_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_c65"/>
     </tlLogic>
 
     <junction id="E" type="priority" x="1000.00" y="500.00" incLanes="E_out_0 E_out_1" intLanes=":E_0_0" shape="1000.00,500.00 1000.00,493.60 1000.00,500.00">

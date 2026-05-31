@@ -9,7 +9,7 @@
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
   :root {
     --bg:#0a0c10;--surface:#111318;--border:#1e2230;
-    --av80:#00e5ff;--c65:#ff6b35;--green:#00ff88;--yellow:#ffd600;
+    --av80:#00e5ff;--c65:#ff6b35;--dqn:#34d399;--green:#00ff88;--yellow:#ffd600;
     --muted:#4a5568;--text:#e2e8f0;--text-dim:#718096;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -36,6 +36,7 @@
   .phase-indicator{display:flex;gap:10px;flex:1}
   .phase-btn{flex:1;padding:10px;border-radius:6px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:700;letter-spacing:0.05em;transition:all 0.3s;border:1px solid var(--border);color:var(--text-dim);background:transparent}
   .phase-btn.active-av80{background:rgba(0,229,255,0.12);border-color:var(--av80);color:var(--av80);box-shadow:0 0 16px rgba(0,229,255,0.2)}
+  .phase-btn.active-yellow{background:rgba(255,214,0,0.12);border-color:var(--yellow);color:var(--yellow);box-shadow:0 0 16px rgba(255,214,0,0.2)}
   .phase-btn.active-allred{background:rgba(255,255,255,0.05);border-color:#444;color:#888}
   .phase-btn.active-c65{background:rgba(255,107,53,0.12);border-color:var(--c65);color:var(--c65);box-shadow:0 0 16px rgba(255,107,53,0.2)}
   #step-counter{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--text-dim);white-space:nowrap}
@@ -55,6 +56,7 @@
   .mode-badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:0.65rem;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:0.08em;margin-left:8px}
   .mode-badge.adaptive{background:rgba(0,229,255,0.15);color:var(--av80);border:1px solid var(--av80)}
   .mode-badge.fixed{background:rgba(255,107,53,0.15);color:var(--c65);border:1px solid var(--c65)}
+  .mode-badge.dqn{background:rgba(52,211,153,0.15);color:var(--dqn);border:1px solid var(--dqn)}
 </style>
 </head>
 <body>
@@ -103,8 +105,11 @@
   <div class="phase-label">Fase activa</div>
   <div class="phase-indicator">
     <div class="phase-btn" id="ph0">AV. 80 VERDE</div>
-    <div class="phase-btn" id="ph1">TODO ROJO</div>
-    <div class="phase-btn" id="ph2">CALLE 65 VERDE</div>
+    <div class="phase-btn" id="ph1">AV. 80 AMARILLO</div>
+    <div class="phase-btn" id="ph2">TODO ROJO AV. 80</div>
+    <div class="phase-btn" id="ph3">CALLE 65 VERDE</div>
+    <div class="phase-btn" id="ph4">CALLE 65 AMARILLO</div>
+    <div class="phase-btn" id="ph5">TODO ROJO C65</div>
   </div>
   <div id="step-counter">paso --</div>
 </div>
@@ -129,10 +134,10 @@
 </div>
 
 <div class="compare-card" id="compare-section" style="display:none">
-  <div class="compare-title">Comparacion Final: Tiempos Fijos vs. Adaptativo</div>
+  <div class="compare-title">Comparacion Final: Tiempos Fijos vs. DQN</div>
   <table>
     <thead>
-      <tr><th>Metrica</th><th>Tiempos Fijos</th><th>Adaptativo</th><th>Variacion</th><th>Meta PMV</th></tr>
+      <tr><th>Metrica</th><th>Tiempos Fijos</th><th>DQN</th><th>Variacion</th><th>Meta PMV</th></tr>
     </thead>
     <tbody id="compare-body"></tbody>
   </table>
@@ -144,7 +149,7 @@
 </footer>
 
 <script>
-const COLORS={adaptive:'#00e5ff',fixed:'#ff6b35',grid:'rgba(255,255,255,0.05)',text:'#718096'};
+const COLORS={fixed:'#ff6b35',dqn:'#34d399',grid:'rgba(255,255,255,0.05)',text:'#718096'};
 const chartOpts={responsive:true,maintainAspectRatio:true,animation:{duration:0},
   plugins:{legend:{labels:{color:COLORS.text,font:{family:'JetBrains Mono',size:10}}}},
   scales:{x:{ticks:{color:COLORS.text,font:{family:'JetBrains Mono',size:10},maxTicksLimit:6},grid:{color:COLORS.grid}},
@@ -154,24 +159,30 @@ function makeChart(id,color){
   return new Chart(document.getElementById(id).getContext('2d'),{
     type:'line',
     data:{labels:[],datasets:[
-      {label:'Adaptativo',data:[],borderColor:color,borderWidth:2,pointRadius:0,tension:0.3,fill:false},
-      {label:'Fijo',data:[],borderColor:COLORS.fixed,borderWidth:1.5,pointRadius:0,tension:0.3,fill:false,borderDash:[4,3]}
+      {label:'Fijo',data:[],borderColor:COLORS.fixed,borderWidth:1.5,pointRadius:0,tension:0.3,fill:false,borderDash:[4,3]},
+      {label:'DQN',data:[],borderColor:color,borderWidth:2,pointRadius:0,tension:0.3,fill:false}
     ]},
     options:chartOpts
   });
 }
 const charts={
-  wait: makeChart('chart-wait','#00e5ff'),
-  queue:makeChart('chart-queue','#00e5ff'),
-  speed:makeChart('chart-speed','#00ff88'),
-  thru: makeChart('chart-thru','#a78bfa')
+  wait: makeChart('chart-wait',COLORS.dqn),
+  queue:makeChart('chart-queue',COLORS.dqn),
+  speed:makeChart('chart-speed',COLORS.dqn),
+  thru: makeChart('chart-thru',COLORS.dqn)
 };
 
-let fixedData=null,adaptiveData=null;
+let fixedData=null,dqnData=null;
+let lastStep=null,lastMode=null;
+let historyLoaded=false;
 const MAX_PTS=150;
 
 async function fetchJSON(path){
   try{const r=await fetch(path+'?t='+Date.now());return r.ok?await r.json():null}catch{return null}
+}
+
+async function fetchText(path){
+  try{const r=await fetch(path+'?t='+Date.now());return r.ok?await r.text():null}catch{return null}
 }
 
 function setStatus(state,text){
@@ -180,17 +191,91 @@ function setStatus(state,text){
   document.getElementById('status-text').textContent=text;
 }
 
-function appendPoint(chart,label,value,dsIdx){
+function appendPoint(chart,label,value,dsIdx,isPrimary){
   if(value==null)return;
-  if(chart.data.labels.length>=MAX_PTS&&dsIdx===0){
+  if(isPrimary&&chart.data.labels.length>=MAX_PTS){
     chart.data.labels.shift();
     chart.data.datasets.forEach(d=>d.data.shift());
   }
-  if(dsIdx===0)chart.data.labels.push(label);
+  if(isPrimary)chart.data.labels.push(label);
   while(chart.data.datasets[dsIdx].data.length<chart.data.labels.length-1)
     chart.data.datasets[dsIdx].data.push(null);
   chart.data.datasets[dsIdx].data.push(value);
   chart.update('none');
+}
+
+function resetCharts(){
+  Object.values(charts).forEach(chart=>{
+    chart.data.labels=[];
+    chart.data.datasets.forEach(d=>d.data=[]);
+    chart.update('none');
+  });
+}
+
+function parseCsv(text){
+  const lines=text.trim().split(/\r?\n/);
+  if(lines.length<2)return [];
+  const headers=lines[0].split(',');
+  const idx=name=>headers.indexOf(name);
+  const iStep=idx('step');
+  const iWait=idx('waiting_time_avg');
+  const iQueue=idx('queue_length_max');
+  const iSpeed=idx('speed_avg');
+  const iThru=idx('throughput');
+  if([iStep,iWait,iQueue,iSpeed,iThru].some(i=>i<0))return [];
+  let throughputAcc=0;
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split(',');
+    if(cols.length<headers.length)continue;
+    const step=Number(cols[iStep]);
+    const wait=Number(cols[iWait]);
+    const queue=Number(cols[iQueue]);
+    const speed=Number(cols[iSpeed]);
+    const thru=Number(cols[iThru]);
+    if(Number.isNaN(step))continue;
+    throughputAcc+=Number.isNaN(thru)?0:thru;
+    rows.push({
+      step,
+      waiting_time_avg:Number.isNaN(wait)?null:wait,
+      queue_length_max:Number.isNaN(queue)?null:queue,
+      speed_avg:Number.isNaN(speed)?null:speed,
+      throughput_total:throughputAcc,
+    });
+  }
+  return rows;
+}
+
+function sampleSeries(rows){
+  if(rows.length<=MAX_PTS)return rows;
+  const stride=Math.ceil(rows.length/MAX_PTS);
+  return rows.filter((_,idx)=>idx%stride===0);
+}
+
+function setChartData(chart,labels,fixedRows,dqnRows,key){
+  chart.data.labels=labels;
+  chart.data.datasets[0].data=fixedRows.map(r=>r[key]);
+  chart.data.datasets[1].data=dqnRows.map(r=>r[key]);
+  chart.update('none');
+}
+
+async function loadHistoryIfAvailable(){
+  if(historyLoaded||lastStep!==null)return;
+  const fixedCsv=await fetchText('/evaluation/results/escenario1_fixed_results.csv');
+  const dqnCsv=await fetchText('/evaluation/results/escenario1_dqn_results.csv');
+  if(!fixedCsv||!dqnCsv)return;
+  let fixedRows=sampleSeries(parseCsv(fixedCsv));
+  let dqnRows=sampleSeries(parseCsv(dqnCsv));
+  const len=Math.min(fixedRows.length,dqnRows.length);
+  if(len===0)return;
+  fixedRows=fixedRows.slice(0,len);
+  dqnRows=dqnRows.slice(0,len);
+  const labels=dqnRows.map(r=>r.step);
+  setChartData(charts.wait,labels,fixedRows,dqnRows,'waiting_time_avg');
+  setChartData(charts.queue,labels,fixedRows,dqnRows,'queue_length_max');
+  setChartData(charts.speed,labels,fixedRows,dqnRows,'speed_avg');
+  setChartData(charts.thru,labels,fixedRows,dqnRows,'throughput_total');
+  historyLoaded=true;
 }
 
 function setDelta(id,current,baseline,higherIsBetter){
@@ -203,33 +288,44 @@ function setDelta(id,current,baseline,higherIsBetter){
 }
 
 function updateLive(live){
-  const isAdaptive=live.mode==='adaptive';
-  setStatus('running',isAdaptive?'Control Adaptativo corriendo...':'Tiempos Fijos corriendo...');
+  const isFixed=live.mode==='fixed';
+  const isDqn=live.mode==='dqn';
+  const statusText=isDqn?'Control DQN corriendo...':'Tiempos Fijos corriendo...';
+  setStatus('running',statusText);
   document.getElementById('kpi-wait').textContent=live.waiting_time_avg!=null?live.waiting_time_avg.toFixed(1):'--';
   document.getElementById('kpi-queue').textContent=live.queue_length_max??'--';
   document.getElementById('kpi-speed').textContent=live.speed_avg!=null?live.speed_avg.toFixed(2):'--';
   document.getElementById('kpi-thru').textContent=live.throughput_total??'--';
   document.getElementById('kpi-step').textContent=live.step??'--';
   document.getElementById('step-counter').textContent='paso '+(live.step??'--');
-  const phClasses=['active-av80','active-allred','active-c65'];
-  [0,1,2].forEach(i=>{
+  const phClasses=['active-av80','active-yellow','active-allred','active-c65','active-yellow','active-allred'];
+  [0,1,2,3,4,5].forEach(i=>{
     const el=document.getElementById('ph'+i);
     el.className='phase-btn';
     if(live.phase===i)el.classList.add(phClasses[i]);
   });
-  const dsIdx=isAdaptive?0:1;
-  appendPoint(charts.wait, live.step,live.waiting_time_avg,dsIdx);
-  appendPoint(charts.queue,live.step,live.queue_length_max,dsIdx);
-  appendPoint(charts.speed,live.step,live.speed_avg,dsIdx);
-  appendPoint(charts.thru, live.step,live.throughput_total,dsIdx);
-  if(fixedData&&isAdaptive){
+  const dsIdx=isDqn?1:0;
+  const shouldAppend=lastStep!==live.step;
+  if(lastMode!==null&&(live.mode!==lastMode||live.step<(lastStep??0))){
+    resetCharts();
+    historyLoaded=false;
+  }
+  if(shouldAppend){
+    appendPoint(charts.wait, live.step,live.waiting_time_avg,dsIdx,true);
+    appendPoint(charts.queue,live.step,live.queue_length_max,dsIdx,true);
+    appendPoint(charts.speed,live.step,live.speed_avg,dsIdx,true);
+    appendPoint(charts.thru, live.step,live.throughput_total,dsIdx,true);
+  }
+  if(fixedData&&isDqn){
     setDelta('kpi-wait-delta', live.waiting_time_avg,fixedData.waiting_time_avg_s,false);
     setDelta('kpi-queue-delta',live.queue_length_max, fixedData.queue_length_max_veh,false);
     setDelta('kpi-speed-delta',live.speed_avg,        fixedData.speed_avg_ms,true);
   }
+  lastStep=live.step;
+  lastMode=live.mode;
 }
 
-function renderComparison(fixed,adaptive){
+function renderComparison(fixed,dqn){
   document.getElementById('compare-section').style.display='block';
   setStatus('done','Simulacion completada');
   const rows=[
@@ -244,10 +340,10 @@ function renderComparison(fixed,adaptive){
   tbody.innerHTML='';
   rows.forEach(r=>{
     const fval=fixed[r.fk]??'--';
-    const aval=adaptive[r.fk]??'--';
+    const dval=dqn[r.fk]??'--';
     let dclass='delta-neu',dtext='--';
-    if(fval!=='--'&&aval!=='--'&&fval!==0){
-      const pct=(aval-fval)/fval*100;
+    if(fval!=='--'&&dval!=='--'&&fval!==0){
+      const pct=(dval-fval)/fval*100;
       const better=r.lower?pct<0:pct>0;
       dtext=(pct>0?'+':'')+pct.toFixed(1)+'%';
       dclass=better?'delta-pos':'delta-neg';
@@ -255,7 +351,7 @@ function renderComparison(fixed,adaptive){
     tbody.insertAdjacentHTML('beforeend',`<tr>
       <td class="metric-name">${r.label}</td>
       <td class="val-fixed">${typeof fval==='number'?fval.toFixed(2):fval}</td>
-      <td class="val-adapt">${typeof aval==='number'?aval.toFixed(2):aval}</td>
+      <td class="val-adapt">${typeof dval==='number'?dval.toFixed(2):dval}</td>
       <td class="${dclass}">${dtext}</td>
       <td class="delta-neu">${r.meta}</td>
     </tr>`);
@@ -263,13 +359,14 @@ function renderComparison(fixed,adaptive){
 }
 
 async function poll(){
+  await loadHistoryIfAvailable();
   const live=await fetchJSON('/evaluation/results/live_feed.json');
   if(live)updateLive(live);
   const fs=await fetchJSON('/evaluation/results/escenario1_fixed_summary.json');
-  const as=await fetchJSON('/evaluation/results/escenario1_adaptive_summary.json');
+  const dq=await fetchJSON('/evaluation/results/escenario1_dqn_summary.json');
   if(fs)fixedData=fs;
-  if(as)adaptiveData=as;
-  if(fixedData&&adaptiveData)renderComparison(fixedData,adaptiveData);
+  if(dq)dqnData=dq;
+  if(fixedData&&dqnData)renderComparison(fixedData,dqnData);
   document.getElementById('last-update').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CO');
 }
 

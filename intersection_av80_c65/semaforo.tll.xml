@@ -2,24 +2,19 @@
     <tlLogic id="J0" type="static" programID="programa_av80_c65" offset="0"> 
 
         <!--
-        Fase 1: Avenida 80 en verde dura 52 segundos.
-        Calle 65 recto en rojo.
-        giro a la derecha desde calle 65 en rojo.
-
-        Estado (segun linkIndex en la red):
-        0-2: N->S (Av 80) = G
-        3:   E->N (giro derecha) = r
-        4-5: E->W (Calle 65) = r
-        6-8: S->N (Av 80) = G
-        9:   W->S (giro derecha) = r
-        10-11: W->E (Calle 65) = r
+        Estados (segun linkIndex en la red):
+        0-2: N->S (Av 80)
+        3:   E->N (giro derecha)
+        4-5: E->W (Calle 65)
+        6-8: S->N (Av 80)
+        9:   W->S (giro derecha)
+        10-11: W->E (Calle 65)
         -->
         <phase duration="52" state="GGGrrrGGGrrr" name="Av80_verde"/>
-
-        <!-- Paso Peatonal con todo rojo -->
-        <phase duration="15" state="rrrrrrrrrrrr" name="Peatonal"/>
-
-        <!-- Fase 2: Calle 65 recto en verde dura 33 segundos. -->
+        <phase duration="3"  state="yyyrrryyyrrr" name="Av80_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_av80"/>
         <phase duration="33" state="rrrGGGrrrGGG" name="C65_verde"/>
+        <phase duration="3"  state="rrryyyrrryyy" name="C65_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_c65"/>
     </tlLogic>
 </additional>

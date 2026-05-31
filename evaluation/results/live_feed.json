@@ -1,1 +1,1 @@
-{"step": 3600, "mode": "adaptive", "phase": 0, "waiting_time_avg": 4.008, "queue_length_max": 21, "speed_avg": 9.613, "throughput_total": 3178}
+{"step": 3600, "mode": "dqn", "phase": 5, "waiting_time_avg": 6.605, "queue_length_max": 36, "speed_avg": 6.997, "throughput_total": 3186}

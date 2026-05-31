@@ -56,8 +56,17 @@ def find_binary(name: str) -> str:
 
 
 def ensure_net_file() -> None:
+    source_files = [
+        SCENARIO_DIR / "nodos.nod.xml",
+        SCENARIO_DIR / "aristas.edg.xml",
+        SCENARIO_DIR / "conexiones.con.xml",
+        SCENARIO_DIR / "semaforo.tll.xml",
+    ]
+
     if NET_FILE.exists():
-        return
+        net_mtime = NET_FILE.stat().st_mtime
+        if all(src.exists() and src.stat().st_mtime <= net_mtime for src in source_files):
+            return
     netconvert = find_binary("netconvert")
     if not netconvert:
         sys.exit("[runner] netconvert no encontrado. Instala SUMO y configura SUMO_HOME.")
@@ -87,18 +96,20 @@ def setup_traci() -> None:
 
 def run_simulation(
     mode: str = "adaptive",
-    gui:  bool = False,
+    gui: bool = False,
     sim_duration_s: int = 3600,
     output_dir: Path | None = None,
+    model_path: str | None = None,
 ) -> dict:
     """
     Ejecuta una simulación completa y devuelve el resumen de métricas.
 
     Args:
-        mode:           "adaptive" | "fixed"
+        mode:           "adaptive" | "fixed" | "dqn"
         gui:            Si True, usa sumo-gui (sin step automático del runner)
         sim_duration_s: Duración de simulación en segundos SUMO
         output_dir:     Directorio de salida para CSVs
+        model_path:     Ruta al modelo DQN (solo modo dqn)
 
     Returns:
         dict con resumen estadístico (ver MetricsCollector.summary())
@@ -112,7 +123,7 @@ def run_simulation(
 
     # Importar módulos propios (compatibles con ejecución desde raíz del repo)
     sys.path.insert(0, str(ROOT))
-    from evaluation.metrics        import MetricsCollector
+    from evaluation.metrics import MetricsCollector
     from decision.adaptive_controller import AdaptiveController
 
     out_dir = output_dir or OUTPUT_DIR
@@ -138,9 +149,17 @@ def run_simulation(
     print(f"\n[runner] Iniciando simulacion - modo: {mode.upper()}")
     traci.start(sumo_cmd)
 
-    collector  = MetricsCollector(traci, tl_id=TL_ID, mode=mode)
-    controller = AdaptiveController(traci, tl_id=TL_ID,
-                                     mode=mode if mode in ("adaptive", "fixed") else "adaptive")
+    collector = MetricsCollector(traci, tl_id=TL_ID, mode=mode)
+    if mode == "dqn":
+        from decision.dqn_controller import DQNController
+
+        controller = DQNController(traci, tl_id=TL_ID, mode=mode, model_path=model_path)
+    else:
+        controller = AdaptiveController(
+            traci,
+            tl_id=TL_ID,
+            mode=mode if mode in ("adaptive", "fixed") else "adaptive",
+        )
 
     LIVE_FEED = out_dir / "live_feed.json"
     step = 0
@@ -203,9 +222,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Seminario — Runner de simulación SUMO")
     parser.add_argument(
         "--mode",
-        choices=["adaptive", "fixed", "gui"],
+        choices=["adaptive", "fixed", "dqn", "gui"],
         default="adaptive",
-        help="adaptive: heurístico | fixed: tiempos fijos | gui: abre SUMO-GUI",
+        help="adaptive: heurístico | fixed: tiempos fijos | dqn: Double DQN | gui: abre SUMO-GUI",
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=None,
+        help="Ruta al modelo DQN (solo modo dqn)",
     )
     parser.add_argument(
         "--duration",
@@ -218,7 +243,7 @@ def main() -> None:
     gui  = args.mode == "gui"
     mode = "adaptive" if gui else args.mode
 
-    run_simulation(mode=mode, gui=gui, sim_duration_s=args.duration)
+    run_simulation(mode=mode, gui=gui, sim_duration_s=args.duration, model_path=args.model)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,14 @@
+{
+  "controller_mode": "dqn",
+  "steps_recorded": 3300,
+  "warmup_excluded_steps": 300,
+  "waiting_time_avg_s": 4.39,
+  "waiting_time_median_s": 3.75,
+  "waiting_time_max_s": 16.78,
+  "queue_length_avg_veh": 23.32,
+  "queue_length_median_veh": 22.0,
+  "queue_length_max_veh": 48,
+  "speed_avg_ms": 8.15,
+  "throughput_total_veh": 3005,
+  "co2_total_mg": 749358350.14
+}

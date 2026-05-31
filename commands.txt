@@ -1,0 +1,13 @@
+# Entrenamiento
+python .\training\train_dqn.py --episodes 50 --duration 3600 --device cpu
+
+# Inferencia con el modelo entrenado
+python .\simulation\traci_runner.py --mode dqn --model .\models\dqn_latest.pt
+
+# Benchmark (fijo vs adaptativo vs dqn)
+python .\evaluation\benchmark.py --duration 3600 --model .\models\dqn_latest.pt
+
+
+python .\dashboard\serve_dashboard.py
+
+python .\simulation\traci_runner.py --mode dqn --model .\models\dqn_latest.pt

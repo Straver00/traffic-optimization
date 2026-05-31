@@ -69,13 +69,20 @@ def compute_comparison(fixed: dict, adaptive: dict) -> dict:
     return results
 
 
-def format_report(comparison: dict, fixed_summary: dict, adaptive_summary: dict) -> str:
+def format_report(
+    comparison: dict,
+    fixed_summary: dict,
+    adaptive_summary: dict,
+    dqn_comparison: dict | None = None,
+    dqn_summary: dict | None = None,
+) -> str:
     lines = [
         "=" * 65,
         "  Seminario - Escenario 1: Comparacion Tiempos Fijos vs. Adaptativo",
         "=" * 65,
         f"  Pasos registrados (fijo):       {fixed_summary.get('steps_recorded', '?')}",
         f"  Pasos registrados (adaptativo): {adaptive_summary.get('steps_recorded', '?')}",
+        f"  Pasos registrados (dqn):        {dqn_summary.get('steps_recorded', '?')}" if dqn_summary else "",
         "",
         f"  {'Metrica':<28} {'Fijo':>10} {'Adapt.':>10} {'D%':>8}  {'OK?':>5}",
         "  " + "-" * 60,
@@ -104,6 +111,32 @@ def format_report(comparison: dict, fixed_summary: dict, adaptive_summary: dict)
             f" {pct_str:>8}  {ok_mark}"
         )
 
+    if dqn_comparison and dqn_summary:
+        lines += [
+            "",
+            "  " + "-" * 60,
+            "  Comparacion: Tiempos Fijos vs. DQN",
+            "  " + "-" * 60,
+            f"  {'Metrica':<28} {'Fijo':>10} {'DQN':>10} {'D%':>8}  {'OK?':>5}",
+            "  " + "-" * 60,
+        ]
+
+        for metric, data in dqn_comparison.items():
+            pct_str = f"{data['change_pct']:+.1f} %"
+            ok_mark = "OK" if data["improved"] else "--"
+            if metric in targets:
+                label, threshold = targets[metric]
+                if data["change_pct"] <= threshold:
+                    ok_mark = f"OK ({label})"
+                else:
+                    ok_mark = f"NO (meta: {label})"
+
+            name = metric.replace("_", " ").replace("avg", "prom.").replace("max", "max.")
+            lines.append(
+                f"  {name:<28} {data['fixed']:>9.2f} {data['adaptive']:>9.2f}"
+                f" {pct_str:>8}  {ok_mark}"
+            )
+
     lines += [
         "",
         "  Metas del PMV (Escenario 1):",
@@ -114,7 +147,12 @@ def format_report(comparison: dict, fixed_summary: dict, adaptive_summary: dict)
     return "\n".join(lines)
 
 
-def run_benchmark(duration: int = 3600, skip_fixed: bool = False) -> None:
+def run_benchmark(
+    duration: int = 3600,
+    skip_fixed: bool = False,
+    skip_dqn: bool = False,
+    model_path: str | None = None,
+) -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     fixed_json    = OUTPUT_DIR / "escenario1_fixed_summary.json"
@@ -133,18 +171,28 @@ def run_benchmark(duration: int = 3600, skip_fixed: bool = False) -> None:
     print("\n[benchmark] >> Corriendo simulacion con CONTROL ADAPTATIVO...")
     adaptive_summary = run_simulation(mode="adaptive", sim_duration_s=duration)
 
+    dqn_summary = None
+    if not skip_dqn:
+        print("\n[benchmark] >> Corriendo simulacion con DQN...")
+        dqn_summary = run_simulation(mode="dqn", sim_duration_s=duration, model_path=model_path)
+
     # --- Comparación ---
     comparison = compute_comparison(fixed_summary, adaptive_summary)
+    dqn_comparison = None
+    if dqn_summary:
+        dqn_comparison = compute_comparison(fixed_summary, dqn_summary)
 
     comp_json = OUTPUT_DIR / "escenario1_comparison.json"
     with open(comp_json, "w", encoding="utf-8") as f:
         json.dump({
             "fixed":      fixed_summary,
             "adaptive":   adaptive_summary,
+            "dqn":        dqn_summary,
             "comparison": comparison,
+            "comparison_dqn": dqn_comparison,
         }, f, indent=2, ensure_ascii=False)
 
-    report = format_report(comparison, fixed_summary, adaptive_summary)
+    report = format_report(comparison, fixed_summary, adaptive_summary, dqn_comparison, dqn_summary)
     print("\n" + report)
 
     comp_txt = OUTPUT_DIR / "escenario1_comparison.txt"
@@ -159,8 +207,17 @@ def main() -> None:
                         help="Duración en segundos SUMO (default: 3600)")
     parser.add_argument("--skip-fixed", action="store_true",
                         help="Reutilizar CSV de tiempos fijos existente")
+    parser.add_argument("--skip-dqn", action="store_true",
+                        help="Omitir ejecucion DQN")
+    parser.add_argument("--model", type=str, default=None,
+                        help="Ruta al modelo DQN (solo modo dqn)")
     args = parser.parse_args()
-    run_benchmark(duration=args.duration, skip_fixed=args.skip_fixed)
+    run_benchmark(
+        duration=args.duration,
+        skip_fixed=args.skip_fixed,
+        skip_dqn=args.skip_dqn,
+        model_path=args.model,
+    )
 
 
 if __name__ == "__main__":

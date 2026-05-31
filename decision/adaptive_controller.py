@@ -13,35 +13,38 @@ Logica de decision (reglas heuristicas):
   - Ante cualquier excepcion TraCI, activa fallback a tiempos fijos en < 2 s (RF-04).
 
 Fases SUMO reales (semaforo.tll.xml - programID "programa_av80_c65"):
-  Fase 0 - Verde Av. 80  (N<->S)  - duracion base 52 s  | GGGrrrGGGrrr
-  Fase 1 - Todo rojo / peatonal   - 15 s fijo            | rrrrrrrrrrrr
-  Fase 2 - Verde Calle 65 (E<->W) - duracion base 33 s   | rrrGGGrrrGGG
+    Fase 0 - Verde Av. 80    (N<->S)  - duracion base 52 s  | GGGrrrGGGrrr
+    Fase 1 - Amarillo Av. 80 (N<->S)  - 3 s fijo            | yyyrrryyyrrr
+    Fase 2 - Todo rojo Av80           - 15 s fijo           | rrrrrrrrrrrr
+    Fase 3 - Verde Calle 65 (E<->W)   - duracion base 33 s  | rrrGGGrrrGGG
+    Fase 4 - Amarillo Calle 65 (E<->W)- 3 s fijo            | rrryyyrrryyy
+    Fase 5 - Todo rojo C65            - 15 s fijo           | rrrrrrrrrrrr
 """
 
 from __future__ import annotations
 import time
 
-
-GREEN_MIN_S      = 15
-GREEN_MAX_S      = 90
-GREEN_MAX_SHARED = 60
-ALL_RED_S        = 15
-MAX_SKIP_CYCLES  = 1
-
-PHASE_GREEN_AV80 = 0
-PHASE_ALL_RED    = 1
-PHASE_GREEN_C65  = 2
-
-PROGRAM_ID = "programa_av80_c65"
-
-EDGES_AV80 = ["N_in", "S_in"]
-EDGES_C65  = ["E_in", "W_in"]
-
-FALLBACK_GREEN_AV80 = 52
-FALLBACK_GREEN_C65  = 33
-
-FLOW_WEIGHT_AV80 = 1800
-FLOW_WEIGHT_C65  = 1500
+from decision.traffic_config import (
+    ALL_RED_S,
+    EDGES_AV80,
+    EDGES_C65,
+    FALLBACK_GREEN_AV80,
+    FALLBACK_GREEN_C65,
+    FLOW_WEIGHT_AV80,
+    FLOW_WEIGHT_C65,
+    GREEN_MAX_S,
+    GREEN_MAX_SHARED,
+    GREEN_MIN_S,
+    MAX_SKIP_CYCLES,
+    PHASE_GREEN_AV80,
+    PHASE_GREEN_C65,
+    PHASE_ALL_RED_AV80,
+    PHASE_ALL_RED_C65,
+    PHASE_YELLOW_AV80,
+    PHASE_YELLOW_C65,
+    PROGRAM_ID,
+    YELLOW_S,
+)
 
 
 class AdaptiveController:
@@ -55,7 +58,6 @@ class AdaptiveController:
         self._phase_timer:   int   = FALLBACK_GREEN_AV80
         self._skip_av80:     int   = 0
         self._skip_c65:      int   = 0
-        self._last_green:    int   = PHASE_GREEN_AV80
         self._fallback_active: bool = False
         self._last_phase_set_time: float = 0.0
 
@@ -90,32 +92,36 @@ class AdaptiveController:
         phase = self._current_phase
 
         if phase == PHASE_GREEN_AV80:
-            self._last_green = PHASE_GREEN_AV80
-            self._set_phase(PHASE_ALL_RED, ALL_RED_S)
+            self._set_phase(PHASE_YELLOW_AV80, YELLOW_S)
 
-        elif phase == PHASE_ALL_RED:
-            if self._last_green == PHASE_GREEN_AV80:
-                duration = self._decide_green(
-                    EDGES_C65, EDGES_AV80,
-                    self._skip_av80,
-                    FLOW_WEIGHT_C65, FLOW_WEIGHT_AV80,
-                )
-                self._skip_av80 += 1
-                self._skip_c65   = 0
-                self._set_phase(PHASE_GREEN_C65, duration)
-            else:
-                duration = self._decide_green(
-                    EDGES_AV80, EDGES_C65,
-                    self._skip_c65,
-                    FLOW_WEIGHT_AV80, FLOW_WEIGHT_C65,
-                )
-                self._skip_c65  += 1
-                self._skip_av80  = 0
-                self._set_phase(PHASE_GREEN_AV80, duration)
+        elif phase == PHASE_YELLOW_AV80:
+            self._set_phase(PHASE_ALL_RED_AV80, ALL_RED_S)
+
+        elif phase == PHASE_ALL_RED_AV80:
+            duration = self._decide_green(
+                EDGES_C65, EDGES_AV80,
+                self._skip_av80,
+                FLOW_WEIGHT_C65, FLOW_WEIGHT_AV80,
+            )
+            self._skip_av80 += 1
+            self._skip_c65 = 0
+            self._set_phase(PHASE_GREEN_C65, duration)
 
         elif phase == PHASE_GREEN_C65:
-            self._last_green = PHASE_GREEN_C65
-            self._set_phase(PHASE_ALL_RED, ALL_RED_S)
+            self._set_phase(PHASE_YELLOW_C65, YELLOW_S)
+
+        elif phase == PHASE_YELLOW_C65:
+            self._set_phase(PHASE_ALL_RED_C65, ALL_RED_S)
+
+        elif phase == PHASE_ALL_RED_C65:
+            duration = self._decide_green(
+                EDGES_AV80, EDGES_C65,
+                self._skip_c65,
+                FLOW_WEIGHT_AV80, FLOW_WEIGHT_C65,
+            )
+            self._skip_c65 += 1
+            self._skip_av80 = 0
+            self._set_phase(PHASE_GREEN_AV80, duration)
 
     def _decide_green(
         self,
