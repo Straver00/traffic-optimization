@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -89,7 +91,7 @@ class SumoDQNEnv:
     def action_dim(self) -> int:
         return self._config.action.size()
 
-    def reset(self) -> tuple[list[float], list[int]]:
+    def reset(self, demand: dict | None = None) -> tuple[list[float], list[int]]:
         self.close()
         setup_traci()
         import traci  # type: ignore
@@ -100,10 +102,13 @@ class SumoDQNEnv:
         if not binary:
             raise RuntimeError("SUMO binary not found")
 
+        route_file = self._write_temp_routes(demand)
+        self._temp_route_file = route_file
+
         sumo_cmd = [
             binary,
             "-n", str(NET_FILE),
-            "-r", str(ROUTE_FILE),
+            "-r", route_file,
             "--no-step-log",
             "--time-to-teleport", "-1",
             "--quit-on-end",
@@ -189,6 +194,11 @@ class SumoDQNEnv:
         if self._traci is not None:
             try:
                 self._traci.close()
+            except Exception:
+                pass
+        if hasattr(self, "_temp_route_file") and self._temp_route_file != str(ROUTE_FILE):
+            try:
+                Path(self._temp_route_file).unlink(missing_ok=True)
             except Exception:
                 pass
         self._traci = None
@@ -283,6 +293,36 @@ class SumoDQNEnv:
     def _max_duration(self, snapshot) -> int:
         secondary_queue = snapshot.queue_c65 if self._current_green == PHASE_GREEN_AV80 else snapshot.queue_av80
         return GREEN_MAX_S if secondary_queue == 0 else GREEN_MAX_SHARED
+
+    def _write_temp_routes(self, demand: dict | None) -> str:
+        """Genera un .rou.xml temporal con los flujos del perfil dado.
+        Si demand es None, devuelve ROUTE_FILE sin modificar."""
+        if demand is None:
+            return str(ROUTE_FILE)
+
+        route_text = Path(ROUTE_FILE).read_text(encoding="utf-8")
+
+        mapping = {
+            "flow_NS": demand["flow_NS"],
+            "flow_SN": demand["flow_SN"],
+            "flow_EW": demand["flow_EW"],
+            "flow_WE": demand["flow_WE"],
+        }
+        for flow_id, veh_per_hour in mapping.items():
+            route_text = re.sub(
+                rf'(<flow\s[^>]*id="{flow_id}"[^>]*)\bvehsPerHour="[^"]*"',
+                rf'\1vehsPerHour="{veh_per_hour}"',
+                route_text,
+            )
+
+        tmp = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".rou.xml", delete=False,
+            encoding="utf-8", dir=Path(ROUTE_FILE).parent
+        )
+        tmp.write(route_text)
+        tmp.flush()
+        tmp.close()
+        return tmp.name
 
     def _is_done(self) -> bool:
         if not self._traci:

@@ -39,17 +39,17 @@ class StateNormalization:
 
 @dataclass(frozen=True)
 class RewardConfig:
-    w_queue: float = 0.4
-    w_wait: float = 0.3
+    w_queue: float = 0.30
+    w_wait: float = 0.25
     w_speed: float = 0.1
     w_throughput: float = 0.1
-    w_co2: float = 0.1
-    w_switch: float = 0.02
+    w_co2: float = 0.25
+    w_switch: float = 0.08
     queue_scale: float = 50.0
     waiting_time_scale: float = 10.0
     speed_scale: float = 15.0
     throughput_scale: float = 10.0
-    co2_scale: float = 1_000_000.0
+    co2_scale: float = 50_000_000.0
 
 
 @dataclass(frozen=True)

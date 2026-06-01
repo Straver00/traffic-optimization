@@ -14,6 +14,50 @@ from rl.config import DQNConfig
 from rl.double_dqn_agent import DoubleDQNAgent
 from simulation.rl_env import SumoDQNEnv
 
+# Perfiles de demanda (veh/h) para variar la carga entre episodios.
+# TODO: para que estos perfiles tengan efecto real, SumoDQNEnv.reset() debe
+# aceptar un parámetro `demand_profile: dict` y regenerar (o seleccionar) el
+# archivo de rutas correspondiente antes de llamar a traci.start(). Por ahora
+# el perfil se selecciona y se imprime, pero la simulación sigue usando
+# ROUTE_FILE estático (rutas.rou.xml).
+DEMAND_PROFILES = [
+    {
+        "name": "Valle",
+        "flow_NS": 400,
+        "flow_SN": 400,
+        "flow_EW": 250,
+        "flow_WE": 250,
+    },
+    {
+        "name": "Pico normal",
+        "flow_NS": 900,
+        "flow_SN": 900,
+        "flow_EW": 600,
+        "flow_WE": 600,
+    },
+    {
+        "name": "Pico extremo",
+        "flow_NS": 1200,
+        "flow_SN": 1200,
+        "flow_EW": 800,
+        "flow_WE": 800,
+    },
+    {
+        "name": "Asimetrico 1",
+        "flow_NS": 1100,
+        "flow_SN": 700,
+        "flow_EW": 400,
+        "flow_WE": 300,
+    },
+    {
+        "name": "Asimetrico 2",
+        "flow_NS": 500,
+        "flow_SN": 900,
+        "flow_EW": 700,
+        "flow_WE": 200,
+    },
+]
+
 
 def build_config(device: str) -> DQNConfig:
     base = DQNConfig()
@@ -46,7 +90,10 @@ def main() -> None:
     model_path.parent.mkdir(parents=True, exist_ok=True)
 
     for episode in range(1, args.episodes + 1):
-        state, valid_actions = env.reset()
+        profile = DEMAND_PROFILES[(episode - 1) % len(DEMAND_PROFILES)]
+        print(f"[train] episodio {episode:>3} | perfil={profile['name']}")
+
+        state, valid_actions = env.reset(demand=profile)
         done = False
         episode_reward = 0.0
         steps = 0
