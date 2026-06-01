@@ -1,3 +1,6 @@
 .vscode
 .venv
 .claude
+CLAUDE.md
+david.md
+__pycache__
