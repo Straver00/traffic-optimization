@@ -1,2 +1,4 @@
 ultralytics
 torch
+pytest
+pytest-cov

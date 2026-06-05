@@ -1,0 +1,79 @@
+<routes>
+    <!-- Tipos de vehículo (idénticos al Escenario 1) -->
+    <vType id="car"     accel="2.6" decel="4.5" sigma="0.5" length="5.0"  maxSpeed="13.89"/>
+    <vType id="moto"    accel="3.5" decel="5.0" sigma="0.5" length="2.0"  maxSpeed="16.67"/>
+    <vType id="bus"     accel="1.2" decel="4.0" sigma="0.5" length="12.0" maxSpeed="11.11"/>
+
+    <!-- ================================================================
+         RUTAS — corredores completos (atraviesan 2 intersecciones)
+         ================================================================ -->
+
+    <!-- Av. 80 occidental (J0 → J2) -->
+    <route id="ruta_N0_S0" edges="N0_in J0_J2 S0_out"/>
+    <route id="ruta_S0_N0" edges="S0_in J2_J0 N0_out"/>
+
+    <!-- Av. 80 oriental (J1 → J3) -->
+    <route id="ruta_N1_S1" edges="N1_in J1_J3 S1_out"/>
+    <route id="ruta_S1_N1" edges="S1_in J3_J1 N1_out"/>
+
+    <!-- Calle 65 norte (J1 → J0) -->
+    <route id="ruta_E0_W0" edges="E0_in J1_J0 W0_out"/>
+    <route id="ruta_W0_E0" edges="W0_in J0_J1 E0_out"/>
+
+    <!-- Calle 65 sur (J3 → J2) -->
+    <route id="ruta_E1_W1" edges="E1_in J3_J2 W1_out"/>
+    <route id="ruta_W1_E1" edges="W1_in J2_J3 E1_out"/>
+
+    <!-- Giros derecha — C65 norte → Av. 80 -->
+    <!-- E0→N1: C65 oriente llega a J1 y sale por el norte -->
+    <route id="ruta_E0_N1" edges="E0_in N1_out"/>
+    <!-- W0→S0: C65 occidente entra a J0, gira sur, sale por S0 -->
+    <route id="ruta_W0_S0" edges="W0_in J0_J2 S0_out"/>
+
+    <!-- Giros derecha — C65 sur → Av. 80 -->
+    <!-- E1→N1: C65 sur-oriente entra a J3, gira norte, sube por J1 y sale N1 -->
+    <route id="ruta_E1_N1" edges="E1_in J3_J1 N1_out"/>
+    <!-- W1→S0: C65 sur-occidente entra a J2, gira sur, sale S0 -->
+    <route id="ruta_W1_S0" edges="W1_in S0_out"/>
+
+    <!-- Flujos cruzados internos (60% del flujo de acceso):
+         Vehículos que entran por Av.80 y salen por C65 (o viceversa),
+         cargando las aristas internas J0_J1 / J0_J2 / J1_J3 / J2_J3. -->
+    <route id="ruta_N0_E0" edges="N0_in J0_J1 E0_out"/>
+    <route id="ruta_N1_W0" edges="N1_in J1_J0 W0_out"/>
+    <route id="ruta_S0_E1" edges="S0_in J2_J3 E1_out"/>
+    <route id="ruta_S1_W1" edges="S1_in J3_J2 W1_out"/>
+
+    <!-- ================================================================
+         FLUJOS DE ACCESO — aforo vespertino real (15:15-16:15, 15/05/2025)
+         Aplicado a cada corredor por separado.
+         ================================================================ -->
+
+    <!-- Av. 80 N→S: 1147 veh/h por corredor -->
+    <flow id="flow_NS_W" type="car" route="ruta_N0_S0" begin="0" end="3600" vehsPerHour="459"/>
+    <flow id="flow_NS_E" type="car" route="ruta_N1_S1" begin="0" end="3600" vehsPerHour="459"/>
+
+    <!-- Av. 80 S→N: 1361 veh/h por corredor -->
+    <flow id="flow_SN_W" type="car" route="ruta_S0_N0" begin="0" end="3600" vehsPerHour="544"/>
+    <flow id="flow_SN_E" type="car" route="ruta_S1_N1" begin="0" end="3600" vehsPerHour="544"/>
+
+    <!-- C65 E→W: 280 veh/h por corredor -->
+    <flow id="flow_EW_N" type="car" route="ruta_E0_W0" begin="0" end="3600" vehsPerHour="112"/>
+    <flow id="flow_EW_S" type="car" route="ruta_E1_W1" begin="0" end="3600" vehsPerHour="112"/>
+
+    <!-- C65 W→E: 308 veh/h por corredor -->
+    <flow id="flow_WE_N" type="car" route="ruta_W0_E0" begin="0" end="3600" vehsPerHour="123"/>
+    <flow id="flow_WE_S" type="car" route="ruta_W1_E1" begin="0" end="3600" vehsPerHour="123"/>
+
+    <!-- Giros derecha: 431 (E→N) y 309 (W→S) — aforo real -->
+    <flow id="flow_EN_J1" type="car" route="ruta_E0_N1" begin="0" end="3600" vehsPerHour="431"/>
+    <flow id="flow_WS_J0" type="car" route="ruta_W0_S0" begin="0" end="3600" vehsPerHour="309"/>
+    <flow id="flow_EN_J3" type="car" route="ruta_E1_N1" begin="0" end="3600" vehsPerHour="431"/>
+    <flow id="flow_WS_J2" type="car" route="ruta_W1_S0" begin="0" end="3600" vehsPerHour="309"/>
+
+    <!-- Flujos cruzados internos (~60% del flujo de acceso N→S y S→N) -->
+    <flow id="flow_cruce_N0_E0" type="car" route="ruta_N0_E0" begin="0" end="3600" vehsPerHour="688"/>
+    <flow id="flow_cruce_N1_W0" type="car" route="ruta_N1_W0" begin="0" end="3600" vehsPerHour="688"/>
+    <flow id="flow_cruce_S0_E1" type="car" route="ruta_S0_E1" begin="0" end="3600" vehsPerHour="817"/>
+    <flow id="flow_cruce_S1_W1" type="car" route="ruta_S1_W1" begin="0" end="3600" vehsPerHour="817"/>
+</routes>

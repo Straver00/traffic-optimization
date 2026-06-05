@@ -1,0 +1,126 @@
+<connections>
+    <!-- ================================================================
+         INTERSECCIÓN J0 (Noroeste)
+         Av. 80: N0_in (norte) / J0_J2 (sur interno) / J2_J0 (norte interno) / N0_out
+         C65:    W0_in (occidente) / J0_J1 (oriente interno) / J1_J0 (oriente) / W0_out
+         Patrón de fases (12 enlaces, igual que Escenario 1):
+           Verde Av80 = GGGrrrGGGrrr | Verde C65 = rrrGGGrrrGGG
+         ================================================================ -->
+
+    <!-- N→S (Av. 80, 3 carriles) -->
+    <connection from="N0_in" to="J0_J2" fromLane="0" toLane="0" tl="J0" linkIndex="0"/>
+    <connection from="N0_in" to="J0_J2" fromLane="1" toLane="1" tl="J0" linkIndex="1"/>
+    <connection from="N0_in" to="J0_J2" fromLane="2" toLane="2" tl="J0" linkIndex="2"/>
+
+    <!-- S→N (Av. 80, 3 carriles) -->
+    <connection from="J2_J0" to="N0_out" fromLane="0" toLane="0" tl="J0" linkIndex="3"/>
+    <connection from="J2_J0" to="N0_out" fromLane="1" toLane="1" tl="J0" linkIndex="4"/>
+    <connection from="J2_J0" to="N0_out" fromLane="2" toLane="2" tl="J0" linkIndex="5"/>
+
+    <!-- E→W (C65, 2 carriles): J1_J0 viene del oriente hacia occidente -->
+    <connection from="J1_J0" to="W0_out" fromLane="0" toLane="0" tl="J0" linkIndex="6"/>
+    <connection from="J1_J0" to="W0_out" fromLane="1" toLane="1" tl="J0" linkIndex="7"/>
+
+    <!-- W→E (C65, 2 carriles) -->
+    <connection from="W0_in" to="J0_J1" fromLane="0" toLane="0" tl="J0" linkIndex="8"/>
+    <connection from="W0_in" to="J0_J1" fromLane="1" toLane="1" tl="J0" linkIndex="9"/>
+
+    <!-- Giro derecha E→N (C65 occidente → Av80 norte): J1_J0 → N0_out -->
+    <connection from="J1_J0" to="N0_out" fromLane="0" toLane="0" tl="J0" linkIndex="10"/>
+
+    <!-- Giro derecha W→S (C65 oriente → Av80 sur): W0_in → J0_J2 -->
+    <connection from="W0_in" to="J0_J2" fromLane="0" toLane="0" tl="J0" linkIndex="11"/>
+
+
+    <!-- ================================================================
+         INTERSECCIÓN J1 (Noreste)
+         Av. 80: N1_in (norte) / J1_J3 (sur interno) / J3_J1 (norte interno) / N1_out
+         C65:    J0_J1 (occidente interno) / E0_in (oriente) / E0_out / J1_J0
+         ================================================================ -->
+
+    <!-- N→S (Av. 80, 3 carriles) -->
+    <connection from="N1_in" to="J1_J3" fromLane="0" toLane="0" tl="J1" linkIndex="0"/>
+    <connection from="N1_in" to="J1_J3" fromLane="1" toLane="1" tl="J1" linkIndex="1"/>
+    <connection from="N1_in" to="J1_J3" fromLane="2" toLane="2" tl="J1" linkIndex="2"/>
+
+    <!-- S→N (Av. 80, 3 carriles) -->
+    <connection from="J3_J1" to="N1_out" fromLane="0" toLane="0" tl="J1" linkIndex="3"/>
+    <connection from="J3_J1" to="N1_out" fromLane="1" toLane="1" tl="J1" linkIndex="4"/>
+    <connection from="J3_J1" to="N1_out" fromLane="2" toLane="2" tl="J1" linkIndex="5"/>
+
+    <!-- E→W (C65, 2 carriles): E0_in viene del oriente -->
+    <connection from="E0_in" to="J1_J0" fromLane="0" toLane="0" tl="J1" linkIndex="6"/>
+    <connection from="E0_in" to="J1_J0" fromLane="1" toLane="1" tl="J1" linkIndex="7"/>
+
+    <!-- W→E (C65, 2 carriles): J0_J1 viene del occidente interno -->
+    <connection from="J0_J1" to="E0_out" fromLane="0" toLane="0" tl="J1" linkIndex="8"/>
+    <connection from="J0_J1" to="E0_out" fromLane="1" toLane="1" tl="J1" linkIndex="9"/>
+
+    <!-- Giro derecha E→N: E0_in (heading W) → N1_out -->
+    <connection from="E0_in" to="N1_out" fromLane="0" toLane="0" tl="J1" linkIndex="10"/>
+
+    <!-- Giro derecha W→S: J0_J1 (heading E) → J1_J3 -->
+    <connection from="J0_J1" to="J1_J3" fromLane="0" toLane="0" tl="J1" linkIndex="11"/>
+
+
+    <!-- ================================================================
+         INTERSECCIÓN J2 (Suroeste)
+         Av. 80: J0_J2 (norte interno) / S0_out / S0_in / J2_J0
+         C65:    W1_in (occidente) / J2_J3 (oriente interno) / J3_J2 / W1_out
+         ================================================================ -->
+
+    <!-- N→S (Av. 80): J0_J2 llega desde el norte, continúa a S0_out -->
+    <connection from="J0_J2" to="S0_out" fromLane="0" toLane="0" tl="J2" linkIndex="0"/>
+    <connection from="J0_J2" to="S0_out" fromLane="1" toLane="1" tl="J2" linkIndex="1"/>
+    <connection from="J0_J2" to="S0_out" fromLane="2" toLane="2" tl="J2" linkIndex="2"/>
+
+    <!-- S→N (Av. 80): S0_in → J2_J0 -->
+    <connection from="S0_in" to="J2_J0" fromLane="0" toLane="0" tl="J2" linkIndex="3"/>
+    <connection from="S0_in" to="J2_J0" fromLane="1" toLane="1" tl="J2" linkIndex="4"/>
+    <connection from="S0_in" to="J2_J0" fromLane="2" toLane="2" tl="J2" linkIndex="5"/>
+
+    <!-- E→W (C65, 2 carriles): J3_J2 viene del oriente interno -->
+    <connection from="J3_J2" to="W1_out" fromLane="0" toLane="0" tl="J2" linkIndex="6"/>
+    <connection from="J3_J2" to="W1_out" fromLane="1" toLane="1" tl="J2" linkIndex="7"/>
+
+    <!-- W→E (C65, 2 carriles): W1_in hacia J2_J3 -->
+    <connection from="W1_in" to="J2_J3" fromLane="0" toLane="0" tl="J2" linkIndex="8"/>
+    <connection from="W1_in" to="J2_J3" fromLane="1" toLane="1" tl="J2" linkIndex="9"/>
+
+    <!-- Giro derecha E→N: J3_J2 (heading W) → J2_J0 -->
+    <connection from="J3_J2" to="J2_J0" fromLane="0" toLane="0" tl="J2" linkIndex="10"/>
+
+    <!-- Giro derecha W→S: W1_in (heading E) → S0_out -->
+    <connection from="W1_in" to="S0_out" fromLane="0" toLane="0" tl="J2" linkIndex="11"/>
+
+
+    <!-- ================================================================
+         INTERSECCIÓN J3 (Sureste)
+         Av. 80: J1_J3 (norte interno) / S1_out / S1_in / J3_J1
+         C65:    J2_J3 (occidente interno) / E1_in (oriente) / E1_out / J3_J2
+         ================================================================ -->
+
+    <!-- N→S (Av. 80): J1_J3 → S1_out -->
+    <connection from="J1_J3" to="S1_out" fromLane="0" toLane="0" tl="J3" linkIndex="0"/>
+    <connection from="J1_J3" to="S1_out" fromLane="1" toLane="1" tl="J3" linkIndex="1"/>
+    <connection from="J1_J3" to="S1_out" fromLane="2" toLane="2" tl="J3" linkIndex="2"/>
+
+    <!-- S→N (Av. 80): S1_in → J3_J1 -->
+    <connection from="S1_in" to="J3_J1" fromLane="0" toLane="0" tl="J3" linkIndex="3"/>
+    <connection from="S1_in" to="J3_J1" fromLane="1" toLane="1" tl="J3" linkIndex="4"/>
+    <connection from="S1_in" to="J3_J1" fromLane="2" toLane="2" tl="J3" linkIndex="5"/>
+
+    <!-- E→W (C65, 2 carriles): E1_in viene del oriente -->
+    <connection from="E1_in" to="J3_J2" fromLane="0" toLane="0" tl="J3" linkIndex="6"/>
+    <connection from="E1_in" to="J3_J2" fromLane="1" toLane="1" tl="J3" linkIndex="7"/>
+
+    <!-- W→E (C65, 2 carriles): J2_J3 viene del occidente interno -->
+    <connection from="J2_J3" to="E1_out" fromLane="0" toLane="0" tl="J3" linkIndex="8"/>
+    <connection from="J2_J3" to="E1_out" fromLane="1" toLane="1" tl="J3" linkIndex="9"/>
+
+    <!-- Giro derecha E→N: E1_in (heading W) → J3_J1 -->
+    <connection from="E1_in" to="J3_J1" fromLane="0" toLane="0" tl="J3" linkIndex="10"/>
+
+    <!-- Giro derecha W→S: J2_J3 (heading E) → S1_out -->
+    <connection from="J2_J3" to="S1_out" fromLane="0" toLane="0" tl="J3" linkIndex="11"/>
+</connections>

@@ -1,0 +1,59 @@
+<edges>
+    <!-- ================================================================
+         ARISTAS EXTERNAS — terminales a intersecciones (y viceversa)
+         Av. 80: 3 carriles, 50 km/h (13.89 m/s)
+         Calle 65: 2 carriles, 40 km/h (11.11 m/s)
+         ================================================================ -->
+
+    <!-- Av. 80 occidental: terminal N0 ↔ J0 -->
+    <edge id="N0_in"  from="N0" to="J0" priority="3" numLanes="3" speed="13.89"/>
+    <edge id="N0_out" from="J0" to="N0" priority="3" numLanes="3" speed="13.89"/>
+
+    <!-- Av. 80 oriental: terminal N1 ↔ J1 -->
+    <edge id="N1_in"  from="N1" to="J1" priority="3" numLanes="3" speed="13.89"/>
+    <edge id="N1_out" from="J1" to="N1" priority="3" numLanes="3" speed="13.89"/>
+
+    <!-- Av. 80 occidental: terminal S0 ↔ J2 -->
+    <edge id="S0_in"  from="S0" to="J2" priority="3" numLanes="3" speed="13.89"/>
+    <edge id="S0_out" from="J2" to="S0" priority="3" numLanes="3" speed="13.89"/>
+
+    <!-- Av. 80 oriental: terminal S1 ↔ J3 -->
+    <edge id="S1_in"  from="S1" to="J3" priority="3" numLanes="3" speed="13.89"/>
+    <edge id="S1_out" from="J3" to="S1" priority="3" numLanes="3" speed="13.89"/>
+
+    <!-- Calle 65 norte: terminal E0 ↔ J1 -->
+    <edge id="E0_in"  from="E0" to="J1" priority="2" numLanes="2" speed="11.11"/>
+    <edge id="E0_out" from="J1" to="E0" priority="2" numLanes="2" speed="11.11"/>
+
+    <!-- Calle 65 sur: terminal E1 ↔ J3 -->
+    <edge id="E1_in"  from="E1" to="J3" priority="2" numLanes="2" speed="11.11"/>
+    <edge id="E1_out" from="J3" to="E1" priority="2" numLanes="2" speed="11.11"/>
+
+    <!-- Calle 65 norte: terminal W0 ↔ J0 -->
+    <edge id="W0_in"  from="W0" to="J0" priority="2" numLanes="2" speed="11.11"/>
+    <edge id="W0_out" from="J0" to="W0" priority="2" numLanes="2" speed="11.11"/>
+
+    <!-- Calle 65 sur: terminal W1 ↔ J2 -->
+    <edge id="W1_in"  from="W1" to="J2" priority="2" numLanes="2" speed="11.11"/>
+    <edge id="W1_out" from="J2" to="W1" priority="2" numLanes="2" speed="11.11"/>
+
+    <!-- ================================================================
+         ARISTAS INTERNAS — conexiones entre intersecciones
+         ================================================================ -->
+
+    <!-- Av. 80 occidental: J0 ↔ J2 (400 m N-S) -->
+    <edge id="J0_J2" from="J0" to="J2" priority="3" numLanes="3" speed="13.89"/>
+    <edge id="J2_J0" from="J2" to="J0" priority="3" numLanes="3" speed="13.89"/>
+
+    <!-- Av. 80 oriental: J1 ↔ J3 (400 m N-S) -->
+    <edge id="J1_J3" from="J1" to="J3" priority="3" numLanes="3" speed="13.89"/>
+    <edge id="J3_J1" from="J3" to="J1" priority="3" numLanes="3" speed="13.89"/>
+
+    <!-- Calle 65 norte: J0 ↔ J1 (350 m E-O) -->
+    <edge id="J0_J1" from="J0" to="J1" priority="2" numLanes="2" speed="11.11"/>
+    <edge id="J1_J0" from="J1" to="J0" priority="2" numLanes="2" speed="11.11"/>
+
+    <!-- Calle 65 sur: J2 ↔ J3 (350 m E-O) -->
+    <edge id="J2_J3" from="J2" to="J3" priority="2" numLanes="2" speed="11.11"/>
+    <edge id="J3_J2" from="J3" to="J2" priority="2" numLanes="2" speed="11.11"/>
+</edges>

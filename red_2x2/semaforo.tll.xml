@@ -1,0 +1,62 @@
+<additional>
+    <!--
+    Programa semafórico para la red 2×2 — 4 semáforos idénticos en estructura.
+    Cada semáforo tiene 12 enlaces (mismo esquema que Escenario 1):
+
+    Orden de enlace (por acceso en sentido horario desde el norte):
+      0-2:  N→S  (Av. 80, 3 carriles)
+      3:    E→N  (giro derecha C65 oriente → Av80 norte)
+      4-5:  E→W  (C65, 2 carriles)
+      6-8:  S→N  (Av. 80, 3 carriles)
+      9:    W→S  (giro derecha C65 occidente → Av80 sur)
+      10-11: W→E (C65, 2 carriles)
+
+    Fases:
+      0 - Verde Av. 80   (52 s) : GGGrrrGGGrrr
+      1 - Amarillo Av.80 ( 3 s) : yyyrrryyyrrr
+      2 - Todo rojo       (15 s) : rrrrrrrrrrrr
+      3 - Verde C65       (33 s) : rrrGGGrrrGGG
+      4 - Amarillo C65   ( 3 s) : rrryyyrrryyy
+      5 - Todo rojo       (15 s) : rrrrrrrrrrrr
+    -->
+
+    <!-- J0 — Noroeste -->
+    <tlLogic id="J0" type="static" programID="programa_J0" offset="0">
+        <phase duration="52" state="GGGrrrGGGrrr" name="Av80_verde"/>
+        <phase duration="3"  state="yyyrrryyyrrr" name="Av80_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_av80"/>
+        <phase duration="33" state="rrrGGGrrrGGG" name="C65_verde"/>
+        <phase duration="3"  state="rrryyyrrryyy" name="C65_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_c65"/>
+    </tlLogic>
+
+    <!-- J1 — Noreste (offset 30 s para ola verde en Av. 80 N→S) -->
+    <tlLogic id="J1" type="static" programID="programa_J1" offset="0">
+        <phase duration="52" state="GGGrrrGGGrrr" name="Av80_verde"/>
+        <phase duration="3"  state="yyyrrryyyrrr" name="Av80_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_av80"/>
+        <phase duration="33" state="rrrGGGrrrGGG" name="C65_verde"/>
+        <phase duration="3"  state="rrryyyrrryyy" name="C65_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_c65"/>
+    </tlLogic>
+
+    <!-- J2 — Suroeste (offset 29 s ≈ 400 m / 13.89 m/s para ola verde) -->
+    <tlLogic id="J2" type="static" programID="programa_J2" offset="29">
+        <phase duration="52" state="GGGrrrGGGrrr" name="Av80_verde"/>
+        <phase duration="3"  state="yyyrrryyyrrr" name="Av80_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_av80"/>
+        <phase duration="33" state="rrrGGGrrrGGG" name="C65_verde"/>
+        <phase duration="3"  state="rrryyyrrryyy" name="C65_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_c65"/>
+    </tlLogic>
+
+    <!-- J3 — Sureste (offset 29 s igual que J2) -->
+    <tlLogic id="J3" type="static" programID="programa_J3" offset="29">
+        <phase duration="52" state="GGGrrrGGGrrr" name="Av80_verde"/>
+        <phase duration="3"  state="yyyrrryyyrrr" name="Av80_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_av80"/>
+        <phase duration="33" state="rrrGGGrrrGGG" name="C65_verde"/>
+        <phase duration="3"  state="rrryyyrrryyy" name="C65_amarillo"/>
+        <phase duration="15" state="rrrrrrrrrrrr" name="Todo_rojo_c65"/>
+    </tlLogic>
+</additional>

@@ -1,0 +1,21 @@
+<nodes>
+    <!-- Intersecciones semaforizadas — cuadrícula 2×2 -->
+    <!-- J0=NO, J1=NE, J2=SO, J3=SE -->
+    <!-- Distancia N-S (Av.80): 400 m | Distancia E-O (C65): 350 m -->
+    <node id="J0" x="0"    y="400"  type="traffic_light"/>
+    <node id="J1" x="350"  y="400"  type="traffic_light"/>
+    <node id="J2" x="0"    y="0"    type="traffic_light"/>
+    <node id="J3" x="350"  y="0"    type="traffic_light"/>
+
+    <!-- Terminales Avenida 80 (500 m de margen para estabilizar flujo) -->
+    <node id="N0" x="0"    y="900"  type="priority"/>
+    <node id="N1" x="350"  y="900"  type="priority"/>
+    <node id="S0" x="0"    y="-500" type="priority"/>
+    <node id="S1" x="350"  y="-500" type="priority"/>
+
+    <!-- Terminales Calle 65 -->
+    <node id="E0" x="850"  y="400"  type="priority"/>
+    <node id="E1" x="850"  y="0"    type="priority"/>
+    <node id="W0" x="-500" y="400"  type="priority"/>
+    <node id="W1" x="-500" y="0"    type="priority"/>
+</nodes>
