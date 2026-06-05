@@ -18,12 +18,12 @@
     <route id="route_W_S" edges="W_in S_out"/>
 
     <!-- Flujos Avenida 80 - aforo vespertino real (15:15-16:15, viernes 15/05/2025) -->
-    <flow id="flow_NS" type="car" route="route_N_S" begin="0" end="3600" vehsPerHour="1147"/>
-    <flow id="flow_SN" type="car" route="route_S_N" begin="0" end="3600" vehsPerHour="1361"/>
+    <flow id="flow_NS" type="car" route="route_N_S" begin="0" end="3600" vehsPerHour="1376"/>
+    <flow id="flow_SN" type="car" route="route_S_N" begin="0" end="3600" vehsPerHour="1633"/>
 
     <!-- Flujos Calle 65 recto - aforo vespertino real (15:15-16:15, viernes 15/05/2025) -->
-    <flow id="flow_EW" type="car" route="route_E_W" begin="0" end="3600" vehsPerHour="280"/>
-    <flow id="flow_WE" type="car" route="route_W_E" begin="0" end="3600" vehsPerHour="308"/>
+    <flow id="flow_EW" type="car" route="route_E_W" begin="0" end="3600" vehsPerHour="336"/>
+    <flow id="flow_WE" type="car" route="route_W_E" begin="0" end="3600" vehsPerHour="370"/>
 
     <!-- Flujos de giro a la derecha desde calle 65 - aforo vespertino real (15:15-16:15, viernes 15/05/2025) -->
     <flow id="flow_EN" type="car" route="route_E_N" begin="0" end="3600" vehsPerHour="431"/>

@@ -7,24 +7,24 @@
 
   Metrica                            Fijo     Adapt.       D%    OK?
   ------------------------------------------------------------
-  waiting time prom. s              5.84      6.12   +4.8 %  NO (meta: <= -15 %)
-  queue length prom. veh           25.50     26.80   +5.1 %  --
-  queue length max. veh            51.00     54.00   +5.9 %  --
-  speed prom. ms                    7.99      7.92   -0.8 %  --
-  throughput total veh           3016.00   3043.00   +0.9 %  OK
-  co2 total mg                 756004038.59 765202900.81   +1.2 %  NO (meta: <= -10 %)
+  waiting time prom. s             10.01      6.19  -38.2 %  OK (<= -15 %)
+  queue length prom. veh           48.63     29.85  -38.6 %  OK
+  queue length max. veh           101.00     63.00  -37.6 %  OK
+  speed prom. ms                    6.74      8.02  +19.0 %  OK
+  throughput total veh           3317.00   3369.00   +1.6 %  OK
+  co2 total mg                 965451592.53 851368177.47  -11.8 %  OK (<= -10 %)
 
   ------------------------------------------------------------
   Comparacion: Tiempos Fijos vs. DQN
   ------------------------------------------------------------
   Metrica                            Fijo        DQN       D%    OK?
   ------------------------------------------------------------
-  waiting time prom. s              5.84      4.92  -15.8 %  OK (<= -15 %)
-  queue length prom. veh           25.50     32.55  +27.6 %  --
-  queue length max. veh            51.00     60.00  +17.6 %  --
-  speed prom. ms                    7.99      7.40   -7.3 %  --
-  throughput total veh           3016.00   2998.00   -0.6 %  --
-  co2 total mg                 756004038.59 813941002.61   +7.7 %  NO (meta: <= -10 %)
+  waiting time prom. s             10.01      6.92  -30.9 %  OK (<= -15 %)
+  queue length prom. veh           48.63     61.45  +26.4 %  --
+  queue length max. veh           101.00    104.00   +3.0 %  --
+  speed prom. ms                    6.74      5.82  -13.7 %  --
+  throughput total veh           3317.00   3230.00   -2.6 %  --
+  co2 total mg                 965451592.53 1072547114.90  +11.1 %  NO (meta: <= -10 %)
 
   Metas del PMV (Escenario 1):
     * Tiempo de espera: -15 % minimo       <- ver waiting_time_avg_s

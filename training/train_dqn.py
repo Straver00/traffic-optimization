@@ -21,40 +21,45 @@ from simulation.rl_env import SumoDQNEnv
 # el perfil se selecciona y se imprime, pero la simulación sigue usando
 # ROUTE_FILE estático (rutas.rou.xml).
 DEMAND_PROFILES = [
+    # Valle (~40% del pico real vespertino 15/05/2025)
     {
         "name": "Valle",
-        "flow_NS": 400,
-        "flow_SN": 400,
-        "flow_EW": 250,
-        "flow_WE": 250,
+        "flow_NS": 459,
+        "flow_SN": 544,
+        "flow_EW": 112,
+        "flow_WE": 123,
     },
+    # Pico normal — valores exactos del aforo vespertino (15:15-16:15, 15/05/2025)
     {
         "name": "Pico normal",
-        "flow_NS": 900,
-        "flow_SN": 900,
-        "flow_EW": 600,
-        "flow_WE": 600,
+        "flow_NS": 1147,
+        "flow_SN": 1361,
+        "flow_EW": 280,
+        "flow_WE": 308,
     },
+    # Pico extremo (~120% del pico real, hora vespertina extrema)
     {
         "name": "Pico extremo",
-        "flow_NS": 1200,
-        "flow_SN": 1200,
-        "flow_EW": 800,
-        "flow_WE": 800,
+        "flow_NS": 1376,
+        "flow_SN": 1633,
+        "flow_EW": 336,
+        "flow_WE": 370,
     },
+    # Asimétrico 1 — Av80 cargada N→S, C65 baja
     {
         "name": "Asimetrico 1",
-        "flow_NS": 1100,
-        "flow_SN": 700,
-        "flow_EW": 400,
-        "flow_WE": 300,
+        "flow_NS": 1400,
+        "flow_SN": 900,
+        "flow_EW": 180,
+        "flow_WE": 200,
     },
+    # Asimétrico 2 — Av80 cargada S→N, C65 equilibrada
     {
         "name": "Asimetrico 2",
-        "flow_NS": 500,
-        "flow_SN": 900,
-        "flow_EW": 700,
-        "flow_WE": 200,
+        "flow_NS": 700,
+        "flow_SN": 1500,
+        "flow_EW": 300,
+        "flow_WE": 280,
     },
 ]
 

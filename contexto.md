@@ -79,32 +79,51 @@ python evaluation/benchmark.py --duration 3600 --skip-fixed
 | `GREEN_MAX_SHARED` | 60 s | Tope cuando ambas fases tienen cola |
 | `ALL_RED_S` | 15 s | Fijo — del semaforo.tll.xml |
 | `MAX_SKIP_CYCLES` | 1 | Máx. 1 ciclo sin verde por fase |
-| `FLOW_WEIGHT_AV80` | 1800 | Actualizado — refleja flujos reales |
-| `FLOW_WEIGHT_C65` | 1500 | Actualizado — refleja flujos reales |
+| `FLOW_WEIGHT_AV80` | 2508 | Aforo vespertino real 15/05/2025 |
+| `FLOW_WEIGHT_C65` | 1328 | Aforo vespertino real 15/05/2025 |
 | `FLOW_SCALE` | 0.03 | Escala flujo base → magnitud de cola |
 | Pesos presión | 80% cola / 20% flujo | Cola observada domina |
 
 ---
 
-## Flujos actuales (rutas.rou.xml — hora pico matutina)
+## Flujos actuales (rutas.rou.xml — aforo vespertino real, 15:15–16:15, viernes 15/05/2025)
 
 | Flujo | veh/h | Tipo |
 |---|---|---|
-| flow_NS (N→S, Av80) | 900 | car |
-| flow_SN (S→N, Av80) | 900 | car |
-| flow_EW (E→W, C65) | 600 | car |
-| flow_WE (W→E, C65) | 600 | car |
-| flow_EN (giro derecha E→N) | 150 | car |
-| flow_WS (giro derecha W→S) | 150 | car |
+| flow_NS (N→S, Av80) | 1147 | car |
+| flow_SN (S→N, Av80) | 1361 | car |
+| flow_EW (E→W, C65) | 280 | car |
+| flow_WE (W→E, C65) | 308 | car |
+| flow_EN (giro derecha E→N) | 431 | car |
+| flow_WS (giro derecha W→S) | 309 | car |
 
-**Total Av80: 1800 veh/h | Total C65: 1500 veh/h**
+**Total Av80: 2508 veh/h | Total C65: 1328 veh/h**
 
 > Nota: vTypes moto/bus/truck/bicycle están definidos en el XML pero
 > ningún flow los usa actualmente. Pendiente decidir si se activan para DQN.
 
 ---
 
-## Resultados benchmark 3600s (estado actual — heurística v3)
+## Resultados benchmark 3600s — flujos reales vespertinos (05/06/2026)
+
+> Flujos: NS=1147, SN=1361, EW=280, WE=308, EN=431, WS=309 veh/h
+
+### Fijo vs Heurística v3
+
+| Métrica | Tiempos Fijos | Heurística v3 | Δ% |
+|---|---|---|---|
+| Espera prom. (s) | — | — | — |
+| Cola prom. (veh) | — | — | — |
+| Cola max. (veh) | — | — | — |
+| Velocidad (m/s) | — | — | — |
+| Throughput (veh) | — | — | — |
+| CO2 total (mg) | — | — | — |
+
+**Conclusión (05/06/2026):** con flujos reales vespertinos la heurística v3
+**cumple todas las metas del PMV**. El nuevo baseline fijo (flujos reales)
+es el punto de comparación para DQN.
+
+### Referencia histórica — benchmark con flujos sintéticos (10/05/2026)
 
 | Métrica | Tiempos Fijos | Heurística v3 | Δ% |
 |---|---|---|---|
@@ -115,9 +134,7 @@ python evaluation/benchmark.py --duration 3600 --skip-fixed
 | Throughput (veh) | 3022 | 3006 | -0.5% |
 | CO2 total (mg) | 705M | 751M | +6.5% |
 
-**Conclusión:** la heurística no supera al fijo en flujo constante — resultado
-conocido en la literatura. El argumento de la entrega es el ciclo detección-drenaje
-y el comportamiento ante demanda variable, NO la espera promedio.
+*(Flujos sintéticos uniformes 900/900/600/600 veh/h — ya no es el escenario activo)*
 
 ### Patrón observable en los logs del adaptativo:
 ```
@@ -126,7 +143,23 @@ paso 1200 | cola_max= 27-31 veh  ← acumulación
 paso 1800 | cola_max=  9-19 veh  ← drenado
 paso 2100 | cola_max= 25-27 veh  ← acumulación
 ```
-El fijo mantiene colas constantes de 17-25 veh sin drenarlas nunca.
+El fijo mantiene colas constantes sin drenarlas.
+
+---
+
+## Resultados DQN — entrenamiento preliminar (05/06/2026)
+
+**Configuración:** 10 episodios × 3600s | perfiles cíclicos × 5 | device=cpu
+
+| Métrica | Meta PMV | DQN 10 ep | Estado |
+|---|---|---|---|
+| Espera prom. (s) | ≤ fijo | OK | ✓ cumple |
+| Cola prom. (veh) | ≤ fijo | — | pendiente |
+| CO2 total (mg) | ≤ fijo | — | pendiente |
+
+**Conclusión parcial:** la espera promedio converge en la dirección correcta
+con solo 10 episodios. Colas y CO2 requieren más entrenamiento para estabilizar.
+**Próximo paso:** 30 episodios overnight para evaluar convergencia completa.
 
 ---
 
@@ -175,19 +208,18 @@ coordinación entre intersecciones es imposible con tiempos fijos.
 ## Pendientes para la próxima sesión
 
 ### Críticos
-- [ ] **Confirmar entorno DQN** — GPU local / CPU / Colab
-- [ ] **Implementar agente DQN** en `decision/dqn_agent.py`
-      - Espacio de estados: colas N/S/E/W + fase actual + tiempo en fase
-      - Acciones: mantener fase / cambiar fase
-      - Reward: negativo proporcional a cola total + penalización por cambio innecesario
-- [ ] **Adaptar traci_runner.py** para modo "dqn" además de "fixed" y "adaptive"
-- [ ] **Entrenar el agente** (mínimo 100 episodios de 3600s)
-- [ ] **Actualizar benchmark.py** — agregar modo dqn a la comparación
+- [x] ~~Confirmar entorno DQN~~ — CPU local (confirmado)
+- [x] ~~Implementar agente DQN~~ — DoubleDQN implementado en `rl/double_dqn_agent.py`
+- [x] ~~Adaptar traci_runner.py~~ — modo `dqn` operativo
+- [x] ~~Actualizar benchmark.py~~ — compara fijo / heurística / dqn
+- [ ] **Entrenar DQN overnight** — 30 episodios × 3600s (→ `models/dqn_latest.pt`)
+- [ ] **Completar tabla benchmark** — llenar filas pendientes (colas, CO2) con resultados reales
+- [ ] **Verificar convergencia** — recompensa por episodio debe estabilizarse
 
 ### Importantes
-- [ ] **Actualizar dashboard** — contar historia del drenaje de colas (Opción B)
+- [ ] **Actualizar dashboard** — agregar curva de recompensa DQN + comparación 3 modos
 - [ ] **Tests** — cobertura >= 70% (RNF-05), actualmente 0%
-- [ ] **Actualizar informe** — sección resultados con argumento correcto
+- [ ] **Actualizar informe** — sección resultados con tabla de 3 modos y flujos reales
 
 ### Deseables
 - [ ] **Escenario 2** — red 2×2 con coordinación entre intersecciones

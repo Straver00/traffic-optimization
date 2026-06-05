@@ -2,13 +2,13 @@
   "controller_mode": "dqn",
   "steps_recorded": 3300,
   "warmup_excluded_steps": 300,
-  "waiting_time_avg_s": 4.92,
-  "waiting_time_median_s": 4.46,
-  "waiting_time_max_s": 12.69,
-  "queue_length_avg_veh": 32.55,
-  "queue_length_median_veh": 33.0,
-  "queue_length_max_veh": 60,
-  "speed_avg_ms": 7.403,
-  "throughput_total_veh": 2998,
-  "co2_total_mg": 813941002.61
+  "waiting_time_avg_s": 6.92,
+  "waiting_time_median_s": 6.59,
+  "waiting_time_max_s": 14.6,
+  "queue_length_avg_veh": 61.45,
+  "queue_length_median_veh": 61.0,
+  "queue_length_max_veh": 104,
+  "speed_avg_ms": 5.819,
+  "throughput_total_veh": 3230,
+  "co2_total_mg": 1072547114.9
 }

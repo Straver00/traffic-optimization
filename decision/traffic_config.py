@@ -24,5 +24,5 @@ EDGES_C65 = ["E_in", "W_in"]
 FALLBACK_GREEN_AV80 = 52
 FALLBACK_GREEN_C65 = 33
 
-FLOW_WEIGHT_AV80 = 1800
-FLOW_WEIGHT_C65 = 1500
+FLOW_WEIGHT_AV80 = 2508   # aforo vespertino real: 1147 + 1361 veh/h (15/05/2025)
+FLOW_WEIGHT_C65  = 1328   # aforo vespertino real: 308 + 280 + 431 + 309 veh/h (15/05/2025)
