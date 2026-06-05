@@ -56,7 +56,7 @@ class RewardConfig:
 class ExplorationConfig:
     epsilon_start: float = 1.0
     epsilon_end: float = 0.05
-    epsilon_decay_steps: int = 50_000
+    epsilon_decay_steps: int = 100_000
 
 
 @dataclass(frozen=True)
