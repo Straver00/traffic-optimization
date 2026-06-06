@@ -42,20 +42,20 @@
          ================================================================ -->
 
     <!-- Av. 80 N→S: 1147 veh/h por corredor -->
-    <flow id="flow_NS_W" type="car" route="ruta_N0_S0" begin="0" end="3600" vehsPerHour="1147"/>
-    <flow id="flow_NS_E" type="car" route="ruta_N1_S1" begin="0" end="3600" vehsPerHour="1147"/>
+    <flow id="flow_NS_W" type="car" route="ruta_N0_S0" begin="0" end="3600" vehsPerHour="1376"/>
+    <flow id="flow_NS_E" type="car" route="ruta_N1_S1" begin="0" end="3600" vehsPerHour="1376"/>
 
     <!-- Av. 80 S→N: 1361 veh/h por corredor -->
-    <flow id="flow_SN_W" type="car" route="ruta_S0_N0" begin="0" end="3600" vehsPerHour="1361"/>
-    <flow id="flow_SN_E" type="car" route="ruta_S1_N1" begin="0" end="3600" vehsPerHour="1361"/>
+    <flow id="flow_SN_W" type="car" route="ruta_S0_N0" begin="0" end="3600" vehsPerHour="1633"/>
+    <flow id="flow_SN_E" type="car" route="ruta_S1_N1" begin="0" end="3600" vehsPerHour="1633"/>
 
     <!-- C65 E→W: 280 veh/h por corredor -->
-    <flow id="flow_EW_N" type="car" route="ruta_E0_W0" begin="0" end="3600" vehsPerHour="280"/>
-    <flow id="flow_EW_S" type="car" route="ruta_E1_W1" begin="0" end="3600" vehsPerHour="280"/>
+    <flow id="flow_EW_N" type="car" route="ruta_E0_W0" begin="0" end="3600" vehsPerHour="336"/>
+    <flow id="flow_EW_S" type="car" route="ruta_E1_W1" begin="0" end="3600" vehsPerHour="336"/>
 
     <!-- C65 W→E: 308 veh/h por corredor -->
-    <flow id="flow_WE_N" type="car" route="ruta_W0_E0" begin="0" end="3600" vehsPerHour="308"/>
-    <flow id="flow_WE_S" type="car" route="ruta_W1_E1" begin="0" end="3600" vehsPerHour="308"/>
+    <flow id="flow_WE_N" type="car" route="ruta_W0_E0" begin="0" end="3600" vehsPerHour="370"/>
+    <flow id="flow_WE_S" type="car" route="ruta_W1_E1" begin="0" end="3600" vehsPerHour="370"/>
 
     <!-- Giros derecha: 431 (E→N) y 309 (W→S) — aforo real -->
     <flow id="flow_EN_J1" type="car" route="ruta_E0_N1" begin="0" end="3600" vehsPerHour="431"/>

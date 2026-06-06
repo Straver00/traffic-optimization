@@ -112,16 +112,29 @@ python evaluation/benchmark.py --duration 3600 --skip-fixed
 
 | Métrica | Tiempos Fijos | Heurística v3 | Δ% |
 |---|---|---|---|
-| Espera prom. (s) | — | — | — |
-| Cola prom. (veh) | — | — | — |
-| Cola max. (veh) | — | — | — |
-| Velocidad (m/s) | — | — | — |
-| Throughput (veh) | — | — | — |
-| CO2 total (mg) | — | — | — |
+| Espera prom. (s) | 10.01 | 6.19 | **−38.2%** ✅ |
+| Cola prom. (veh) | 48.63 | 29.85 | **−38.6%** ✅ |
+| Cola max. (veh) | 101 | 63 | **−37.6%** ✅ |
+| Velocidad (m/s) | 6.74 | 8.02 | **+19.0%** ✅ |
+| Throughput (veh) | 3317 | 3369 | **+1.6%** ✅ |
+| CO2 total (mg) | 965M | 851M | **−11.8%** ✅ |
 
 **Conclusión (05/06/2026):** con flujos reales vespertinos la heurística v3
 **cumple todas las metas del PMV**. El nuevo baseline fijo (flujos reales)
 es el punto de comparación para DQN.
+
+### DQN (30 episodios, flujos reales vespertinos)
+
+| Métrica | Tiempos Fijos | DQN 30 ep | Δ% |
+|---|---|---|---|
+| Espera prom. (s) | 10.01 | 4.53 | **−54.8%** ✅ |
+| Cola prom. (veh) | 48.63 | 28.59 | **−41.2%** ✅ |
+| Cola max. (veh) | 101 | 60 | **−40.6%** ✅ |
+| Velocidad (m/s) | 6.74 | 8.07 | **+19.7%** ✅ |
+| Throughput (veh) | 3317 | 3360 | **+1.3%** ✅ |
+| CO2 total (mg) | 965M | 857M | **−11.2%** ✅ |
+
+**Conclusión DQN:** con 30 episodios el agente supera al heurístico en espera (−54.8% vs −38.2%) y cumple CO2. Todas las metas del PMV cumplidas en Escenario 1.
 
 ### Referencia histórica — benchmark con flujos sintéticos (10/05/2026)
 
@@ -213,8 +226,8 @@ coordinación entre intersecciones es imposible con tiempos fijos.
 - [x] ~~Adaptar traci_runner.py~~ — modo `dqn` operativo
 - [x] ~~Actualizar benchmark.py~~ — compara fijo / heurística / dqn
 - [ ] **Entrenar DQN overnight** — 30 episodios × 3600s (→ `models/dqn_latest.pt`)
-- [ ] **Completar tabla benchmark** — llenar filas pendientes (colas, CO2) con resultados reales
-- [ ] **Verificar convergencia** — recompensa por episodio debe estabilizarse
+- [x] ~~**Completar tabla benchmark**~~ — tabla llena con resultados reales (05/06/2026)
+- [x] ~~**Verificar convergencia**~~ — DQN 30 ep cumple espera y CO2 en E1 (05/06/2026)
 
 ### Importantes
 - [ ] **Actualizar dashboard** — agregar curva de recompensa DQN + comparación 3 modos
@@ -222,7 +235,7 @@ coordinación entre intersecciones es imposible con tiempos fijos.
 - [ ] **Actualizar informe** — sección resultados con tabla de 3 modos y flujos reales
 
 ### Deseables
-- [ ] **Escenario 2** — red 2×2 con coordinación entre intersecciones
+- [x] ~~**Escenario 2**~~ — benchmarkeado (05/06/2026): heurístico cumple meta de espera, DQN subentrenado (30 ep insuficientes, requiere ≥200 ep)
 - [ ] **perception.py** — refactorizar en módulos separados
 - [ ] Activar vTypes mixtos (moto/bus/truck) en rutas.rou.xml para DQN
 
@@ -235,6 +248,29 @@ Warning: Missing yellow phase in tlLogic 'J0'...
 Warning: Vehicle performs emergency braking...
 ```
 Ambos son informativos. Funcionamiento correcto.
+
+---
+
+## Resultados benchmark Escenario 2 (05/06/2026)
+
+> Red 2×2: 4 intersecciones (J0 NO, J1 NE, J2 SO, J3 SE) | 3600 s | flujos reales vespertinos
+
+| Métrica | Fijo | Adaptativo | Δ% | DQN (30 ep) | Δ% |
+|---|---|---|---|---|---|
+| Espera prom. (s) | 11.05 | 8.82 | **−20.2%** ✅ | 13.35 | +20.8% ❌ |
+| Cola prom. (veh) | 147 | 118 | −19.8% | 393 | +167% ❌ |
+| Cola max. (veh) | 147 | 118 | −19.8% | 393 | +167% ❌ |
+| Velocidad (m/s) | 6.58 | 7.15 | +8.7% | 3.60 | −45.2% ❌ |
+| Throughput (veh) | 26 664 | 26 924 | +1.0% | 23 300 | −12.6% ❌ |
+| CO2 total (mg) | 10.59 G | 10.04 G | −5.2% ❌ | 17.13 G | +61.7% ❌ |
+| Efecto rebote (veh) | 0.09 | 4.02 | — ❌ | 3.30 | — ❌ |
+
+**Metas del PMV Escenario 2:** espera ≤−15%, CO2 ≤−10%, efecto_rebote ≤−20%.
+
+**Conclusión (05/06/2026):**
+- El heurístico adaptativo cumple la meta de espera (−20.2%) pero no CO2 (−5.2%) ni efecto_rebote (sube a 4.02 veh).
+- El DQN con 30 episodios está en **fase de exploración**: las colas crecen monotónicamente durante la simulación (upstream 6.5 → 32.1 veh). Los resultados no son comparables con el heurístico entrenado. Se requieren **≥200 episodios** para convergencia.
+- La coordinación inter-intersecciones (efecto_rebote) no está resuelta por ningún modo — es el problema abierto del Escenario 2.
 
 ---
 

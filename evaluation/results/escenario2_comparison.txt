@@ -1,0 +1,32 @@
+======================================================================
+  Seminario — Escenario 2: Red 2×2 | Fijo vs. Adaptativo vs. DQN
+======================================================================
+
+  Metrica                            Fijo     Adapt.       D%    OK?
+  ------------------------------------------------------------
+  espera prom s                    11.05      8.82  -20.2 %  OK (<= -15 %)
+  cola prom veh                   147.06    117.89  -19.8 %  OK
+  cola max veh                    147.06    117.89  -19.8 %  OK
+  velocidad prom ms                 6.58      7.15   +8.7 %  OK
+  throughput total veh          26664.00  26924.00   +1.0 %  OK
+  co2 total mg                 10593784594.56 10040106259.28   -5.2 %  NO (meta: <= -10 %)
+  efecto rebote veh                 0.09      4.02 +4366.7 %  NO (meta: <= -20 %)
+
+  ------------------------------------------------------------
+  Fijo vs. DQN
+  ------------------------------------------------------------
+  Metrica                            Fijo        DQN       D%    OK?
+  ------------------------------------------------------------
+  espera prom s                    11.05     13.35  +20.8 %  NO (meta: <= -15 %)
+  cola prom veh                   147.06    392.78 +167.1 %  --
+  cola max veh                    147.06    392.78 +167.1 %  --
+  velocidad prom ms                 6.58      3.60  -45.2 %  --
+  throughput total veh          26664.00  23300.00  -12.6 %  --
+  co2 total mg                 10593784594.56 17131204290.92  +61.7 %  NO (meta: <= -10 %)
+  efecto rebote veh                 0.09      3.30 +3566.7 %  NO (meta: <= -20 %)
+
+  Metas del PMV (Escenario 2):
+    * Espera prom.: -15 % minimo
+    * Emisiones CO2: -10 % minimo
+    * Efecto rebote: -20 % (coordinacion entre intersecciones)
+======================================================================

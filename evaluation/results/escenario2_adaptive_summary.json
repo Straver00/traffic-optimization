@@ -1,0 +1,17 @@
+{
+  "modo": "adaptive",
+  "duracion_s": 3600,
+  "intersecciones": [
+    "J0",
+    "J1",
+    "J2",
+    "J3"
+  ],
+  "espera_prom_s": 8.82,
+  "cola_prom_veh": 117.89,
+  "cola_max_veh": 117.89,
+  "velocidad_prom_ms": 7.15,
+  "throughput_total_veh": 26924,
+  "co2_total_mg": 10040106259.28,
+  "efecto_rebote_veh": 4.02
+}

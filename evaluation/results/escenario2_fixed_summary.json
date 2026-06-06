@@ -1,0 +1,17 @@
+{
+  "modo": "fixed",
+  "duracion_s": 3600,
+  "intersecciones": [
+    "J0",
+    "J1",
+    "J2",
+    "J3"
+  ],
+  "espera_prom_s": 11.05,
+  "cola_prom_veh": 147.06,
+  "cola_max_veh": 147.06,
+  "velocidad_prom_ms": 6.581,
+  "throughput_total_veh": 26664,
+  "co2_total_mg": 10593784594.56,
+  "efecto_rebote_veh": 0.09
+}

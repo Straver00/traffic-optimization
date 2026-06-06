@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import sys
 from dataclasses import replace
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+
+OUTPUT_DIR = ROOT / "evaluation" / "results"
 
 from rl.config import DQNConfig
 from rl.double_dqn_agent import DoubleDQNAgent
@@ -58,6 +61,8 @@ def main() -> None:
     prefijo = Path(args.model_path)
     prefijo.parent.mkdir(parents=True, exist_ok=True)
 
+    historial_recompensas: list[dict] = []
+
     for episodio in range(1, args.episodes + 1):
         perfil = DEMAND_PROFILES[(episodio - 1) % len(DEMAND_PROFILES)]
         print(f"[train_2x2] episodio {episodio:>3} | perfil={perfil['name']}")
@@ -103,6 +108,14 @@ def main() -> None:
             f"| recompensa_total={recomp_total:>9.3f} "
             f"| efecto_rebote={info.efecto_rebote:>6.1f} veh"
         )
+        historial_recompensas.append({
+            "episodio":            episodio,
+            "J0":                  round(recompensas_ep["J0"], 4),
+            "J1":                  round(recompensas_ep["J1"], 4),
+            "J2":                  round(recompensas_ep["J2"], 4),
+            "J3":                  round(recompensas_ep["J3"], 4),
+            "recompensa_total_red": round(recomp_total, 4),
+        })
 
         if episodio % args.save_every == 0:
             for tl, agente in agentes.items():
@@ -110,11 +123,21 @@ def main() -> None:
                 agente.save(ruta)
                 print(f"[train_2x2] checkpoint guardado -> {ruta}")
 
-    # Guardado final
+    # Guardado final de checkpoints
     for tl, agente in agentes.items():
         ruta = f"{prefijo}_{tl}.pt"
         agente.save(ruta)
         print(f"[train_2x2] modelo final guardado -> {ruta}")
+
+    # Persistir curva de recompensa para análisis posterior
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    ruta_curva = OUTPUT_DIR / "entrenamiento_2x2_recompensas.csv"
+    campos = ["episodio", "J0", "J1", "J2", "J3", "recompensa_total_red"]
+    with open(ruta_curva, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=campos)
+        writer.writeheader()
+        writer.writerows(historial_recompensas)
+    print(f"[train_2x2] curva de recompensa guardada -> {ruta_curva}")
 
 
 if __name__ == "__main__":

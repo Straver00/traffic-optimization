@@ -57,6 +57,14 @@
   .mode-badge.adaptive{background:rgba(0,229,255,0.15);color:var(--av80);border:1px solid var(--av80)}
   .mode-badge.fixed{background:rgba(255,107,53,0.15);color:var(--c65);border:1px solid var(--c65)}
   .mode-badge.dqn{background:rgba(52,211,153,0.15);color:var(--dqn);border:1px solid var(--dqn)}
+  .e2-separator{margin:28px 0 14px;display:flex;align-items:center;gap:12px}
+  .e2-separator::before,.e2-separator::after{content:'';flex:1;height:1px;background:var(--border)}
+  .e2-separator span{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);white-space:nowrap;padding:0 4px}
+  .e2-banner{background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.35);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:#ffb300;line-height:1.6}
+  td.val-adapt-e2{color:var(--av80)}
+  td.val-dqn-ok{color:#5a6580;font-weight:400}
+  td.val-dqn-warn{color:#4a5068;font-weight:400}
+  td.delta-warn{color:#4a5068;font-weight:700}
 </style>
 </head>
 <body>
@@ -140,6 +148,30 @@
       <tr><th>Metrica</th><th>Tiempos Fijos</th><th>DQN</th><th>Variacion</th><th>Meta PMV</th></tr>
     </thead>
     <tbody id="compare-body"></tbody>
+  </table>
+</div>
+
+<div class="e2-separator"><span>Escenario 2 — Red 2×2 · 4 intersecciones</span></div>
+
+<div class="e2-banner">
+  ⚠ Escenario 2 está fuera del alcance del PMV. El DQN con 30 episodios está en fase de exploración — los resultados no son comparables con el heurístico entrenado.
+</div>
+
+<div class="compare-card" id="e2-section" style="display:none">
+  <div class="compare-title">Fijo vs. Adaptativo vs. DQN · 3600 s · aforo vespertino real (J0+J1+J2+J3)</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Metrica</th>
+        <th>Tiempos Fijos</th>
+        <th>Adaptativo</th>
+        <th>Δ% Adapt.</th>
+        <th>DQN (30 ep) ⚠</th>
+        <th>Δ% DQN</th>
+        <th>Meta PMV</th>
+      </tr>
+    </thead>
+    <tbody id="e2-compare-body"></tbody>
   </table>
 </div>
 
@@ -370,8 +402,54 @@ async function poll(){
   document.getElementById('last-update').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CO');
 }
 
+async function renderE2(){
+  const data=await fetchJSON('/evaluation/results/escenario2_comparison.json');
+  if(!data)return;
+  document.getElementById('e2-section').style.display='block';
+  const rows=[
+    {label:'Espera prom. (s)',    fk:'espera_prom_s',        lower:true, meta:'≤ -15%'},
+    {label:'Cola prom. (veh)',    fk:'cola_prom_veh',        lower:true, meta:'--'},
+    {label:'Cola max. (veh)',     fk:'cola_max_veh',         lower:true, meta:'--'},
+    {label:'Velocidad (m/s)',     fk:'velocidad_prom_ms',    lower:false,meta:'--'},
+    {label:'Throughput (veh)',    fk:'throughput_total_veh', lower:false,meta:'--'},
+    {label:'CO2 total',           fk:'co2_total_mg',         lower:true, meta:'≤ -10%'},
+    {label:'Efecto rebote (veh)', fk:'efecto_rebote_veh',    lower:true, meta:'≤ -20%'},
+  ];
+  const fijo=data.fijo, adapt=data.adaptativo, dqn=data.dqn;
+  function fmt(v,fk){
+    if(v==null)return '--';
+    if(fk==='co2_total_mg'){const g=v/1e9;return g.toFixed(2)+' G mg';}
+    return typeof v==='number'?v.toFixed(2):v;
+  }
+  function pct(base,val){
+    if(base==null||val==null||base===0)return null;
+    return (val-base)/base*100;
+  }
+  function fmtPct(p){return p==null?'--':(p>0?'+':'')+p.toFixed(1)+'%';}
+  function pctCls(p,lower){if(p==null)return 'delta-neu';const better=lower?p<0:p>0;return better?'delta-pos':'delta-neg';}
+  const tbody=document.getElementById('e2-compare-body');
+  tbody.innerHTML='';
+  rows.forEach(r=>{
+    const fv=fijo[r.fk], av=adapt[r.fk], dv=dqn[r.fk];
+    const ap=pct(fv,av), dp=pct(fv,dv);
+    const dqnWorse=dv!=null&&fv!=null&&(r.lower?dv>fv:dv<fv);
+    const dqnCls=dqnWorse?'val-dqn-warn':'val-dqn-ok';
+    const dqnDeltaCls=dqnWorse?'delta-warn':pctCls(dp,r.lower);
+    tbody.insertAdjacentHTML('beforeend',`<tr>
+      <td class="metric-name">${r.label}</td>
+      <td class="val-fixed">${fmt(fv,r.fk)}</td>
+      <td class="val-adapt-e2">${fmt(av,r.fk)}</td>
+      <td class="${pctCls(ap,r.lower)}">${fmtPct(ap)}</td>
+      <td class="${dqnCls}">${dqnWorse?'⚠ ':''}${fmt(dv,r.fk)}</td>
+      <td class="${dqnDeltaCls}">${fmtPct(dp)}</td>
+      <td class="delta-neu">${r.meta}</td>
+    </tr>`);
+  });
+}
+
 poll();
 setInterval(poll,1500);
+renderE2();
 </script>
 </body>
 </html>

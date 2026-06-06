@@ -1,0 +1,155 @@
+{
+  "fijo": {
+    "modo": "fixed",
+    "duracion_s": 3600,
+    "intersecciones": [
+      "J0",
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "espera_prom_s": 11.05,
+    "cola_prom_veh": 147.06,
+    "cola_max_veh": 147.06,
+    "velocidad_prom_ms": 6.581,
+    "throughput_total_veh": 26664,
+    "co2_total_mg": 10593784594.56,
+    "efecto_rebote_veh": 0.09
+  },
+  "adaptativo": {
+    "modo": "adaptive",
+    "duracion_s": 3600,
+    "intersecciones": [
+      "J0",
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "espera_prom_s": 8.82,
+    "cola_prom_veh": 117.89,
+    "cola_max_veh": 117.89,
+    "velocidad_prom_ms": 7.15,
+    "throughput_total_veh": 26924,
+    "co2_total_mg": 10040106259.28,
+    "efecto_rebote_veh": 4.02
+  },
+  "dqn": {
+    "modo": "dqn",
+    "duracion_s": 3600,
+    "intersecciones": [
+      "J0",
+      "J1",
+      "J2",
+      "J3"
+    ],
+    "espera_prom_s": 13.35,
+    "cola_prom_veh": 392.78,
+    "cola_max_veh": 392.78,
+    "velocidad_prom_ms": 3.604,
+    "throughput_total_veh": 23300,
+    "co2_total_mg": 17131204290.92,
+    "efecto_rebote_veh": 3.3
+  },
+  "comparacion_adapt": {
+    "espera_prom_s": {
+      "unidad": "s",
+      "fijo": 11.05,
+      "comparado": 8.82,
+      "cambio_pct": -20.18,
+      "mejora": true
+    },
+    "cola_prom_veh": {
+      "unidad": "veh",
+      "fijo": 147.06,
+      "comparado": 117.89,
+      "cambio_pct": -19.84,
+      "mejora": true
+    },
+    "cola_max_veh": {
+      "unidad": "veh",
+      "fijo": 147.06,
+      "comparado": 117.89,
+      "cambio_pct": -19.84,
+      "mejora": true
+    },
+    "velocidad_prom_ms": {
+      "unidad": "m/s",
+      "fijo": 6.581,
+      "comparado": 7.15,
+      "cambio_pct": 8.65,
+      "mejora": true
+    },
+    "throughput_total_veh": {
+      "unidad": "veh",
+      "fijo": 26664,
+      "comparado": 26924,
+      "cambio_pct": 0.98,
+      "mejora": true
+    },
+    "co2_total_mg": {
+      "unidad": "mg",
+      "fijo": 10593784594.56,
+      "comparado": 10040106259.28,
+      "cambio_pct": -5.23,
+      "mejora": true
+    },
+    "efecto_rebote_veh": {
+      "unidad": "veh",
+      "fijo": 0.09,
+      "comparado": 4.02,
+      "cambio_pct": 4366.67,
+      "mejora": false
+    }
+  },
+  "comparacion_dqn": {
+    "espera_prom_s": {
+      "unidad": "s",
+      "fijo": 11.05,
+      "comparado": 13.35,
+      "cambio_pct": 20.81,
+      "mejora": false
+    },
+    "cola_prom_veh": {
+      "unidad": "veh",
+      "fijo": 147.06,
+      "comparado": 392.78,
+      "cambio_pct": 167.09,
+      "mejora": false
+    },
+    "cola_max_veh": {
+      "unidad": "veh",
+      "fijo": 147.06,
+      "comparado": 392.78,
+      "cambio_pct": 167.09,
+      "mejora": false
+    },
+    "velocidad_prom_ms": {
+      "unidad": "m/s",
+      "fijo": 6.581,
+      "comparado": 3.604,
+      "cambio_pct": -45.24,
+      "mejora": false
+    },
+    "throughput_total_veh": {
+      "unidad": "veh",
+      "fijo": 26664,
+      "comparado": 23300,
+      "cambio_pct": -12.62,
+      "mejora": false
+    },
+    "co2_total_mg": {
+      "unidad": "mg",
+      "fijo": 10593784594.56,
+      "comparado": 17131204290.92,
+      "cambio_pct": 61.71,
+      "mejora": false
+    },
+    "efecto_rebote_veh": {
+      "unidad": "veh",
+      "fijo": 0.09,
+      "comparado": 3.3,
+      "cambio_pct": 3566.67,
+      "mejora": false
+    }
+  }
+}
