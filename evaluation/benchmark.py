@@ -155,6 +155,12 @@ def run_benchmark(
 ) -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Limpiar live_feed para inicio fresco — el nuevo benchmark sobreescribirá modos anteriores
+    try:
+        (OUTPUT_DIR / "live_feed.json").write_text("{}", encoding="utf-8")
+    except Exception:
+        pass
+
     fixed_json    = OUTPUT_DIR / "escenario1_fixed_summary.json"
     adaptive_json = OUTPUT_DIR / "escenario1_adaptive_summary.json"
 

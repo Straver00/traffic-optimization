@@ -274,4 +274,14 @@ Ambos son informativos. Funcionamiento correcto.
 
 ---
 
-*Continuar esta sesión pegando este README como contexto inicial.*
+# 1. Benchmark completo (escribe live_feed.json + summary JSONs mientras corre)
+python evaluation/benchmark.py --duration 3600 --model models/dqn_latest.pt
+
+# 2. Dashboard (en otra terminal)
+python dashboard/serve_dashboard.py
+# → http://localhost:8000/dashboard/dashboard.html
+
+# 3. SUMO GUI (en otra terminal, cualquier modo)
+python simulation/traci_runner.py --mode fixed --gui
+python simulation/traci_runner.py --mode adaptive --gui
+python simulation/traci_runner.py --mode dqn --model models/dqn_latest.pt --gui

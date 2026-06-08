@@ -65,6 +65,8 @@
   td.val-dqn-ok{color:#5a6580;font-weight:400}
   td.val-dqn-warn{color:#4a5068;font-weight:400}
   td.delta-warn{color:#4a5068;font-weight:700}
+  .barras-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
+  .barras-grid .chart-card canvas{max-height:150px}
 </style>
 </head>
 <body>
@@ -128,7 +130,7 @@
     <canvas id="chart-wait"></canvas>
   </div>
   <div class="chart-card">
-    <div class="chart-title">Cola Maxima (veh detenidos)</div>
+    <div class="chart-title">Cola (veh detenidos)</div>
     <canvas id="chart-queue"></canvas>
   </div>
   <div class="chart-card">
@@ -136,8 +138,23 @@
     <canvas id="chart-speed"></canvas>
   </div>
   <div class="chart-card">
+    <div class="chart-title">CO2 Acumulado (mg)</div>
+    <canvas id="chart-co2"></canvas>
+  </div>
+  <div class="chart-card">
     <div class="chart-title">Throughput Acumulado (veh)</div>
     <canvas id="chart-thru"></canvas>
+  </div>
+</div>
+
+<div class="compare-card" id="barras-section" style="display:none">
+  <div class="compare-title">Comparacion Final — Fijo vs. Adaptativo vs. DQN · Escenario 1</div>
+  <div class="barras-grid">
+    <div class="chart-card"><div class="chart-title">Espera Prom. (s)</div><canvas id="bar-espera"></canvas></div>
+    <div class="chart-card"><div class="chart-title">Cola Prom. (veh)</div><canvas id="bar-cola"></canvas></div>
+    <div class="chart-card"><div class="chart-title">Velocidad (m/s)</div><canvas id="bar-vel"></canvas></div>
+    <div class="chart-card"><div class="chart-title">CO2 Total (mg)</div><canvas id="bar-co2"></canvas></div>
+    <div class="chart-card"><div class="chart-title">Throughput (veh)</div><canvas id="bar-thru"></canvas></div>
   </div>
 </div>
 
@@ -181,38 +198,54 @@
 </footer>
 
 <script>
-const COLORS={fixed:'#ff6b35',dqn:'#34d399',grid:'rgba(255,255,255,0.05)',text:'#718096'};
-const chartOpts={responsive:true,maintainAspectRatio:true,animation:{duration:0},
-  plugins:{legend:{labels:{color:COLORS.text,font:{family:'JetBrains Mono',size:10}}}},
-  scales:{x:{ticks:{color:COLORS.text,font:{family:'JetBrains Mono',size:10},maxTicksLimit:6},grid:{color:COLORS.grid}},
-          y:{ticks:{color:COLORS.text,font:{family:'JetBrains Mono',size:10}},grid:{color:COLORS.grid}}}};
+// --- Colores por modo ---
+const COLORES={fijo:'#ff6b35',adaptativo:'#00e5ff',dqn:'#34d399',grid:'rgba(255,255,255,0.05)',texto:'#718096'};
 
-function makeChart(id,color){
+// --- Opciones base para gráficas de línea ---
+const optsLinea={responsive:true,maintainAspectRatio:true,animation:{duration:0},
+  plugins:{legend:{labels:{color:COLORES.texto,font:{family:'JetBrains Mono',size:10}}}},
+  scales:{x:{ticks:{color:COLORES.texto,font:{family:'JetBrains Mono',size:10},maxTicksLimit:6},grid:{color:COLORES.grid}},
+          y:{ticks:{color:COLORES.texto,font:{family:'JetBrains Mono',size:10}},grid:{color:COLORES.grid}}}};
+
+// --- Opciones base para gráficas de barra ---
+const optsBarra={responsive:true,maintainAspectRatio:true,animation:{duration:400},
+  plugins:{legend:{display:false}},
+  scales:{x:{ticks:{color:COLORES.texto,font:{family:'JetBrains Mono',size:10}},grid:{color:COLORES.grid}},
+          y:{ticks:{color:COLORES.texto,font:{family:'JetBrains Mono',size:10}},grid:{color:COLORES.grid}}}};
+
+function crearGraficaLinea(id){
   return new Chart(document.getElementById(id).getContext('2d'),{
     type:'line',
     data:{labels:[],datasets:[
-      {label:'Fijo',data:[],borderColor:COLORS.fixed,borderWidth:1.5,pointRadius:0,tension:0.3,fill:false,borderDash:[4,3]},
-      {label:'DQN',data:[],borderColor:color,borderWidth:2,pointRadius:0,tension:0.3,fill:false}
+      {label:'Fijo',       data:[],borderColor:COLORES.fijo,       borderWidth:1.5,pointRadius:0,tension:0.3,fill:false,borderDash:[4,3]},
+      {label:'Adaptativo', data:[],borderColor:COLORES.adaptativo, borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},
+      {label:'DQN',        data:[],borderColor:COLORES.dqn,        borderWidth:2,  pointRadius:0,tension:0.3,fill:false}
     ]},
-    options:chartOpts
+    options:optsLinea
   });
 }
-const charts={
-  wait: makeChart('chart-wait',COLORS.dqn),
-  queue:makeChart('chart-queue',COLORS.dqn),
-  speed:makeChart('chart-speed',COLORS.dqn),
-  thru: makeChart('chart-thru',COLORS.dqn)
+
+const graficas={
+  espera:    crearGraficaLinea('chart-wait'),
+  cola:      crearGraficaLinea('chart-queue'),
+  velocidad: crearGraficaLinea('chart-speed'),
+  co2:       crearGraficaLinea('chart-co2'),
+  throughput:crearGraficaLinea('chart-thru')
 };
 
-let fixedData=null,dqnData=null;
-let lastStep=null,lastMode=null;
-let historyLoaded=false;
+// Mapeo: clave de gráfica → campo en historial_modo
+const CAMPOS_GRAFICA={espera:'espera',cola:'cola',velocidad:'velocidad',co2:'co2',throughput:'throughput'};
+// Índice de dataset por clave de modo
+const IDX_MODO={fixed:0,adaptive:1,dqn:2};
 const MAX_PTS=150;
+
+let datosFixed=null,datosAdaptativo=null,datosDqn=null;
+let graficasBarras={};
+let historialCargado=false;
 
 async function fetchJSON(path){
   try{const r=await fetch(path+'?t='+Date.now());return r.ok?await r.json():null}catch{return null}
 }
-
 async function fetchText(path){
   try{const r=await fetch(path+'?t='+Date.now());return r.ok?await r.text():null}catch{return null}
 }
@@ -223,93 +256,82 @@ function setStatus(state,text){
   document.getElementById('status-text').textContent=text;
 }
 
-function appendPoint(chart,label,value,dsIdx,isPrimary){
-  if(value==null)return;
-  if(isPrimary&&chart.data.labels.length>=MAX_PTS){
-    chart.data.labels.shift();
-    chart.data.datasets.forEach(d=>d.data.shift());
-  }
-  if(isPrimary)chart.data.labels.push(label);
-  while(chart.data.datasets[dsIdx].data.length<chart.data.labels.length-1)
-    chart.data.datasets[dsIdx].data.push(null);
-  chart.data.datasets[dsIdx].data.push(value);
-  chart.update('none');
-}
-
-function resetCharts(){
-  Object.values(charts).forEach(chart=>{
-    chart.data.labels=[];
-    chart.data.datasets.forEach(d=>d.data=[]);
-    chart.update('none');
+// --- Actualiza todas las gráficas de línea desde el historial del live_feed ---
+function actualizarGraficasDesdeHistorial(feed){
+  let labelsRef=[];
+  ['fixed','adaptive','dqn'].forEach(clave=>{
+    const d=feed[clave];
+    if(d&&Array.isArray(d.timestamps)&&d.timestamps.length>labelsRef.length) labelsRef=d.timestamps;
+  });
+  if(labelsRef.length===0)return;
+  const paso=labelsRef.length>MAX_PTS?Math.ceil(labelsRef.length/MAX_PTS):1;
+  const labelsMuest=labelsRef.filter((_,i)=>i%paso===0);
+  Object.entries(CAMPOS_GRAFICA).forEach(([nombreGraf,campoDatos])=>{
+    const g=graficas[nombreGraf];
+    g.data.labels=labelsMuest;
+    ['fixed','adaptive','dqn'].forEach(clave=>{
+      const d=feed[clave];
+      const idx=IDX_MODO[clave];
+      if(!d||!Array.isArray(d[campoDatos])){g.data.datasets[idx].data=[];return;}
+      const n=Math.min(d.timestamps.length,d[campoDatos].length);
+      g.data.datasets[idx].data=d[campoDatos].slice(0,n).filter((_,i)=>i%paso===0);
+    });
+    g.update('none');
   });
 }
 
+// --- Carga histórico desde CSVs cuando live_feed no tiene el nuevo formato ---
 function parseCsv(text){
   const lines=text.trim().split(/\r?\n/);
   if(lines.length<2)return [];
   const headers=lines[0].split(',');
   const idx=name=>headers.indexOf(name);
-  const iStep=idx('step');
-  const iWait=idx('waiting_time_avg');
-  const iQueue=idx('queue_length_max');
-  const iSpeed=idx('speed_avg');
-  const iThru=idx('throughput');
+  const iStep=idx('step'),iWait=idx('waiting_time_avg'),iQueue=idx('queue_length_max');
+  const iSpeed=idx('speed_avg'),iThru=idx('throughput'),iCo2=idx('co2_mg');
   if([iStep,iWait,iQueue,iSpeed,iThru].some(i=>i<0))return [];
-  let throughputAcc=0;
+  let thrAcc=0,co2Acc=0;
   const rows=[];
   for(let i=1;i<lines.length;i++){
     const cols=lines[i].split(',');
     if(cols.length<headers.length)continue;
     const step=Number(cols[iStep]);
-    const wait=Number(cols[iWait]);
-    const queue=Number(cols[iQueue]);
-    const speed=Number(cols[iSpeed]);
-    const thru=Number(cols[iThru]);
     if(Number.isNaN(step))continue;
-    throughputAcc+=Number.isNaN(thru)?0:thru;
-    rows.push({
-      step,
-      waiting_time_avg:Number.isNaN(wait)?null:wait,
-      queue_length_max:Number.isNaN(queue)?null:queue,
-      speed_avg:Number.isNaN(speed)?null:speed,
-      throughput_total:throughputAcc,
-    });
+    const thr=Number(cols[iThru]),co2v=iCo2>=0?Number(cols[iCo2]):0;
+    thrAcc+=Number.isNaN(thr)?0:thr;
+    co2Acc+=Number.isNaN(co2v)?0:co2v;
+    rows.push({step,
+      espera:parseFloat(cols[iWait])||null,
+      cola:parseInt(cols[iQueue])||null,
+      velocidad:parseFloat(cols[iSpeed])||null,
+      co2:Math.round(co2Acc),
+      throughput:thrAcc});
   }
   return rows;
 }
 
-function sampleSeries(rows){
-  if(rows.length<=MAX_PTS)return rows;
-  const stride=Math.ceil(rows.length/MAX_PTS);
-  return rows.filter((_,idx)=>idx%stride===0);
+function rowsAFeedModo(rows){
+  if(!rows.length)return null;
+  const paso=rows.length>MAX_PTS?Math.ceil(rows.length/MAX_PTS):1;
+  const m=rows.filter((_,i)=>i%paso===0);
+  return{timestamps:m.map(r=>r.step),espera:m.map(r=>r.espera),cola:m.map(r=>r.cola),
+         velocidad:m.map(r=>r.velocidad),co2:m.map(r=>r.co2),throughput:m.map(r=>r.throughput)};
 }
 
-function setChartData(chart,labels,fixedRows,dqnRows,key){
-  chart.data.labels=labels;
-  chart.data.datasets[0].data=fixedRows.map(r=>r[key]);
-  chart.data.datasets[1].data=dqnRows.map(r=>r[key]);
-  chart.update('none');
+async function cargarHistorialDesdeCSVs(){
+  if(historialCargado)return;
+  const [fCsv,aCsv,dCsv]=await Promise.all([
+    fetchText('/evaluation/results/escenario1_fixed_results.csv'),
+    fetchText('/evaluation/results/escenario1_adaptive_results.csv'),
+    fetchText('/evaluation/results/escenario1_dqn_results.csv')
+  ]);
+  const fb={};
+  if(fCsv){const r=rowsAFeedModo(parseCsv(fCsv));if(r)fb.fixed=r;}
+  if(aCsv){const r=rowsAFeedModo(parseCsv(aCsv));if(r)fb.adaptive=r;}
+  if(dCsv){const r=rowsAFeedModo(parseCsv(dCsv));if(r)fb.dqn=r;}
+  if(Object.keys(fb).length>0){actualizarGraficasDesdeHistorial(fb);historialCargado=true;}
 }
 
-async function loadHistoryIfAvailable(){
-  if(historyLoaded||lastStep!==null)return;
-  const fixedCsv=await fetchText('/evaluation/results/escenario1_fixed_results.csv');
-  const dqnCsv=await fetchText('/evaluation/results/escenario1_dqn_results.csv');
-  if(!fixedCsv||!dqnCsv)return;
-  let fixedRows=sampleSeries(parseCsv(fixedCsv));
-  let dqnRows=sampleSeries(parseCsv(dqnCsv));
-  const len=Math.min(fixedRows.length,dqnRows.length);
-  if(len===0)return;
-  fixedRows=fixedRows.slice(0,len);
-  dqnRows=dqnRows.slice(0,len);
-  const labels=dqnRows.map(r=>r.step);
-  setChartData(charts.wait,labels,fixedRows,dqnRows,'waiting_time_avg');
-  setChartData(charts.queue,labels,fixedRows,dqnRows,'queue_length_max');
-  setChartData(charts.speed,labels,fixedRows,dqnRows,'speed_avg');
-  setChartData(charts.thru,labels,fixedRows,dqnRows,'throughput_total');
-  historyLoaded=true;
-}
-
+// --- KPIs en tiempo real ---
 function setDelta(id,current,baseline,higherIsBetter){
   if(current==null||!baseline)return;
   const pct=(current-baseline)/baseline*100;
@@ -319,11 +341,10 @@ function setDelta(id,current,baseline,higherIsBetter){
   el.className='kpi-delta '+(better?'better':'worse');
 }
 
-function updateLive(live){
-  const isFixed=live.mode==='fixed';
-  const isDqn=live.mode==='dqn';
-  const statusText=isDqn?'Control DQN corriendo...':'Tiempos Fijos corriendo...';
-  setStatus('running',statusText);
+function actualizarKPIs(live){
+  const isDqn=live.mode==='dqn',isAdapt=live.mode==='adaptive';
+  const txt=isDqn?'Control DQN corriendo...':isAdapt?'Adaptativo corriendo...':'Tiempos Fijos corriendo...';
+  setStatus('running',txt);
   document.getElementById('kpi-wait').textContent=live.waiting_time_avg!=null?live.waiting_time_avg.toFixed(1):'--';
   document.getElementById('kpi-queue').textContent=live.queue_length_max??'--';
   document.getElementById('kpi-speed').textContent=live.speed_avg!=null?live.speed_avg.toFixed(2):'--';
@@ -332,31 +353,17 @@ function updateLive(live){
   document.getElementById('step-counter').textContent='paso '+(live.step??'--');
   const phClasses=['active-av80','active-yellow','active-allred','active-c65','active-yellow','active-allred'];
   [0,1,2,3,4,5].forEach(i=>{
-    const el=document.getElementById('ph'+i);
-    el.className='phase-btn';
+    const el=document.getElementById('ph'+i);el.className='phase-btn';
     if(live.phase===i)el.classList.add(phClasses[i]);
   });
-  const dsIdx=isDqn?1:0;
-  const shouldAppend=lastStep!==live.step;
-  if(lastMode!==null&&(live.mode!==lastMode||live.step<(lastStep??0))){
-    resetCharts();
-    historyLoaded=false;
+  if(datosFixed&&isDqn){
+    setDelta('kpi-wait-delta', live.waiting_time_avg,datosFixed.waiting_time_avg_s,false);
+    setDelta('kpi-queue-delta',live.queue_length_max, datosFixed.queue_length_max_veh,false);
+    setDelta('kpi-speed-delta',live.speed_avg,        datosFixed.speed_avg_ms,true);
   }
-  if(shouldAppend){
-    appendPoint(charts.wait, live.step,live.waiting_time_avg,dsIdx,true);
-    appendPoint(charts.queue,live.step,live.queue_length_max,dsIdx,true);
-    appendPoint(charts.speed,live.step,live.speed_avg,dsIdx,true);
-    appendPoint(charts.thru, live.step,live.throughput_total,dsIdx,true);
-  }
-  if(fixedData&&isDqn){
-    setDelta('kpi-wait-delta', live.waiting_time_avg,fixedData.waiting_time_avg_s,false);
-    setDelta('kpi-queue-delta',live.queue_length_max, fixedData.queue_length_max_veh,false);
-    setDelta('kpi-speed-delta',live.speed_avg,        fixedData.speed_avg_ms,true);
-  }
-  lastStep=live.step;
-  lastMode=live.mode;
 }
 
+// --- Tabla comparativa fijo vs DQN (existente) ---
 function renderComparison(fixed,dqn){
   document.getElementById('compare-section').style.display='block';
   setStatus('done','Simulacion completada');
@@ -368,17 +375,13 @@ function renderComparison(fixed,dqn){
     {label:'Throughput (veh)',     fk:'throughput_total_veh', lower:false,meta:'--'},
     {label:'CO2 total (mg)',       fk:'co2_total_mg',         lower:true, meta:'-10%'},
   ];
-  const tbody=document.getElementById('compare-body');
-  tbody.innerHTML='';
+  const tbody=document.getElementById('compare-body');tbody.innerHTML='';
   rows.forEach(r=>{
-    const fval=fixed[r.fk]??'--';
-    const dval=dqn[r.fk]??'--';
+    const fval=fixed[r.fk]??'--',dval=dqn[r.fk]??'--';
     let dclass='delta-neu',dtext='--';
     if(fval!=='--'&&dval!=='--'&&fval!==0){
-      const pct=(dval-fval)/fval*100;
-      const better=r.lower?pct<0:pct>0;
-      dtext=(pct>0?'+':'')+pct.toFixed(1)+'%';
-      dclass=better?'delta-pos':'delta-neg';
+      const pct=(dval-fval)/fval*100;const better=r.lower?pct<0:pct>0;
+      dtext=(pct>0?'+':'')+pct.toFixed(1)+'%';dclass=better?'delta-pos':'delta-neg';
     }
     tbody.insertAdjacentHTML('beforeend',`<tr>
       <td class="metric-name">${r.label}</td>
@@ -390,15 +393,57 @@ function renderComparison(fixed,dqn){
   });
 }
 
+// --- Gráficas de barras comparativas (3 modos) ---
+function crearGraficaBarra(id){
+  return new Chart(document.getElementById(id).getContext('2d'),{
+    type:'bar',
+    data:{labels:['Fijo','Adaptativo','DQN'],datasets:[{
+      data:[null,null,null],
+      backgroundColor:['rgba(255,107,53,0.6)','rgba(0,229,255,0.6)','rgba(52,211,153,0.6)'],
+      borderColor:[COLORES.fijo,COLORES.adaptativo,COLORES.dqn],borderWidth:1
+    }]},
+    options:optsBarra
+  });
+}
+
+function renderBarras(fixed,adaptive,dqn){
+  if(!fixed||!adaptive||!dqn)return;
+  if(!graficasBarras.espera){
+    document.getElementById('barras-section').style.display='block';
+    graficasBarras.espera=crearGraficaBarra('bar-espera');
+    graficasBarras.cola=  crearGraficaBarra('bar-cola');
+    graficasBarras.vel=   crearGraficaBarra('bar-vel');
+    graficasBarras.co2=   crearGraficaBarra('bar-co2');
+    graficasBarras.thru=  crearGraficaBarra('bar-thru');
+  }
+  const actualizar=(g,vals)=>{g.data.datasets[0].data=vals.map(v=>v??0);g.update('none');};
+  actualizar(graficasBarras.espera,[fixed.waiting_time_avg_s,  adaptive.waiting_time_avg_s,  dqn.waiting_time_avg_s]);
+  actualizar(graficasBarras.cola,  [fixed.queue_length_avg_veh,adaptive.queue_length_avg_veh,dqn.queue_length_avg_veh]);
+  actualizar(graficasBarras.vel,   [fixed.speed_avg_ms,        adaptive.speed_avg_ms,        dqn.speed_avg_ms]);
+  actualizar(graficasBarras.co2,   [fixed.co2_total_mg,        adaptive.co2_total_mg,        dqn.co2_total_mg]);
+  actualizar(graficasBarras.thru,  [fixed.throughput_total_veh,adaptive.throughput_total_veh,dqn.throughput_total_veh]);
+}
+
+// --- Bucle principal de polling ---
 async function poll(){
-  await loadHistoryIfAvailable();
-  const live=await fetchJSON('/evaluation/results/live_feed.json');
-  if(live)updateLive(live);
-  const fs=await fetchJSON('/evaluation/results/escenario1_fixed_summary.json');
-  const dq=await fetchJSON('/evaluation/results/escenario1_dqn_summary.json');
-  if(fs)fixedData=fs;
-  if(dq)dqnData=dq;
-  if(fixedData&&dqnData)renderComparison(fixedData,dqnData);
+  const feed=await fetchJSON('/evaluation/results/live_feed.json');
+  if(feed){
+    const tieneHistorial=['fixed','adaptive','dqn'].some(k=>feed[k]&&Array.isArray(feed[k].timestamps));
+    if(tieneHistorial){actualizarGraficasDesdeHistorial(feed);historialCargado=true;}
+    if(feed.step!=null)actualizarKPIs(feed);
+  }
+  if(!historialCargado)await cargarHistorialDesdeCSVs();
+
+  const[fs,as,dq]=await Promise.all([
+    fetchJSON('/evaluation/results/escenario1_fixed_summary.json'),
+    fetchJSON('/evaluation/results/escenario1_adaptive_summary.json'),
+    fetchJSON('/evaluation/results/escenario1_dqn_summary.json')
+  ]);
+  if(fs)datosFixed=fs;
+  if(as)datosAdaptativo=as;
+  if(dq)datosDqn=dq;
+  if(datosFixed&&datosDqn)renderComparison(datosFixed,datosDqn);
+  if(datosFixed&&datosAdaptativo&&datosDqn)renderBarras(datosFixed,datosAdaptativo,datosDqn);
   document.getElementById('last-update').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CO');
 }
 

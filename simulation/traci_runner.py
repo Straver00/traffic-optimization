@@ -33,6 +33,7 @@ ROOT         = Path(__file__).resolve().parent.parent
 SCENARIO_DIR = ROOT / "intersection_av80_c65"
 NET_FILE     = SCENARIO_DIR / "intersection_av80_c65.net.xml"
 ROUTE_FILE   = SCENARIO_DIR / "rutas.rou.xml"
+SUMO_CFG     = SCENARIO_DIR / "intersection_av80_c65.sumocfg"
 OUTPUT_DIR   = ROOT / "evaluation" / "results"
 
 TL_ID = "J0"   # ID del semáforo en semaforo.tll.xml
@@ -135,14 +136,23 @@ def run_simulation(
     if not binary:
         sys.exit(f"[runner] Binario SUMO no encontrado ({'sumo-gui' if gui else 'sumo'}).")
 
-    sumo_cmd = [
-        binary,
-        "-n", str(NET_FILE),
-        "-r", str(ROUTE_FILE),
-        "--no-step-log",
-        "--time-to-teleport", "-1",   # deshabilitar teleport para métricas limpias
-        "--quit-on-end",
-    ]
+    if SUMO_CFG.exists():
+        sumo_cmd = [
+            binary,
+            "--configuration-file", str(SUMO_CFG),
+            "--no-step-log",
+            "--time-to-teleport", "-1",
+            "--quit-on-end",
+        ]
+    else:
+        sumo_cmd = [
+            binary,
+            "--net-file",    str(NET_FILE),
+            "--route-files", str(ROUTE_FILE),
+            "--no-step-log",
+            "--time-to-teleport", "-1",
+            "--quit-on-end",
+        ]
     if gui:
         sumo_cmd.append("--start")
 
@@ -164,16 +174,32 @@ def run_simulation(
     LIVE_FEED = out_dir / "live_feed.json"
     step = 0
     throughput_acc = 0
+    co2_acc = 0.0
+    historial_modo = {
+        "timestamps": [], "espera": [], "cola": [],
+        "velocidad": [], "co2": [], "throughput": [],
+    }
     try:
         while traci.simulation.getMinExpectedNumber() > 0 and step < sim_duration_s:
             traci.simulationStep()
             controller.step(step)
             snap = collector.collect(step)
             throughput_acc += snap.throughput
+            co2_acc += snap.co2_mg
             step += 1
 
             if step % 10 == 0:
-                live = {
+                historial_modo["timestamps"].append(step)
+                historial_modo["espera"].append(round(snap.waiting_time_avg, 2))
+                historial_modo["cola"].append(snap.queue_length_max)
+                historial_modo["velocidad"].append(round(snap.speed_avg, 2))
+                historial_modo["co2"].append(int(round(co2_acc, 0)))
+                historial_modo["throughput"].append(throughput_acc)
+                try:
+                    feed_actual = json.loads(LIVE_FEED.read_text(encoding="utf-8")) if LIVE_FEED.exists() else {}
+                except Exception:
+                    feed_actual = {}
+                feed_actual.update({
                     "step": step,
                     "mode": mode,
                     "phase": snap.green_phase_index,
@@ -181,12 +207,10 @@ def run_simulation(
                     "queue_length_max": snap.queue_length_max,
                     "speed_avg": snap.speed_avg,
                     "throughput_total": throughput_acc,
-                }
+                    mode: historial_modo,
+                })
                 try:
-                    LIVE_FEED.write_text(
-                        json.dumps(live),
-                        encoding="utf-8"
-                    )
+                    LIVE_FEED.write_text(json.dumps(feed_actual), encoding="utf-8")
                 except Exception:
                     pass
 
@@ -224,7 +248,12 @@ def main() -> None:
         "--mode",
         choices=["adaptive", "fixed", "dqn", "gui"],
         default="adaptive",
-        help="adaptive: heurístico | fixed: tiempos fijos | dqn: Double DQN | gui: abre SUMO-GUI",
+        help="adaptive: heurístico | fixed: tiempos fijos | dqn: Double DQN | gui: alias de --mode adaptive --gui",
+    )
+    parser.add_argument(
+        "--gui",
+        action="store_true",
+        help="Abrir SUMO-GUI en lugar del modo headless (combinable con cualquier --mode)",
     )
     parser.add_argument(
         "--model",
@@ -240,8 +269,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    gui  = args.mode == "gui"
-    mode = "adaptive" if gui else args.mode
+    gui  = args.gui or (args.mode == "gui")
+    mode = "adaptive" if args.mode == "gui" else args.mode
 
     run_simulation(mode=mode, gui=gui, sim_duration_s=args.duration, model_path=args.model)
 
